@@ -1,0 +1,14 @@
+# Docusaurus
+.docusaurus/
+build/
+
+# Dependencies
+node_modules/
+
+# Misc
+.DS_Store
+package-lock.json
+target-operating-model.html
+.env.local
+.env
+.cache
