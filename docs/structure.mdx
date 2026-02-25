@@ -1,0 +1,78 @@
+---
+id: structure
+title: Repository Structure
+description: Two-repo model — specs and system — with clear ownership boundaries.
+---
+
+import { SectionHeader, RepoCard, CalloutBox } from '@site/src/components/tom';
+import styles from '@site/src/components/tom/tom.module.css';
+
+<SectionHeader num="02" title="Repository Structure" desc="Two repos with clear ownership. The specs repo is governed knowledge. The system repo is the implementation. They never merge." />
+
+<div className={`${styles.reposGrid} fi`}>
+
+<RepoCard
+  accent="rust"
+  icon="📋"
+  title="openclaw-specs"
+  sub="platform · governed knowledge"
+  tree={<>
+    constitution/<br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-rust)'}}>policies.md</span><br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-rust)'}}>risk-levels.md</span><br/>
+    components/<br/>
+    &nbsp;&nbsp;{'{name}'}/specs/<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style={{color:'var(--tom-teal)'}}>invariants.yaml</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style={{color:'var(--tom-teal)'}}>contracts/</span><br/>
+    agents/<br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-navy)'}}>analyst.md</span><br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-navy)'}}>architect.md</span><br/>
+    graph/<br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-ink-faint)'}}>index.yaml</span>
+  </>}
+/>
+
+<RepoCard
+  accent="teal"
+  icon="⚙️"
+  title="your-system"
+  sub="implementation · component teams"
+  tree={<>
+    components/<br/>
+    &nbsp;&nbsp;cart/<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;docs/specs/<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style={{color:'var(--tom-teal)'}}>implement-spec.md</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;src/<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;tests/<br/>
+    &nbsp;&nbsp;checkout/<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;docs/specs/<br/>
+    .claude/<br/>
+    &nbsp;&nbsp;agents/ → ../openclaw-specs/agents/
+  </>}
+/>
+
+<RepoCard
+  accent="navy"
+  icon="📦"
+  title="Context Packs"
+  sub="onboarding · generated artifacts"
+  tree={<>
+    packs/<br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-navy)'}}>cart-context-pack.md</span><br/>
+    &nbsp;&nbsp;<span style={{color:'var(--tom-navy)'}}>checkout-context-pack.md</span><br/>
+    generated/<br/>
+    &nbsp;&nbsp;graph-snapshot.yaml<br/>
+    &nbsp;&nbsp;contract-index.json<br/>
+    <span style={{color:'var(--tom-ink-faint)',fontStyle:'italic'}}>// Auto-generated on PR merge</span>
+  </>}
+/>
+
+</div>
+
+<div className="fi" style={{marginTop: '2.5rem'}}>
+
+<CalloutBox type="amber" label="The golden rule">
+  The **openclaw-specs** repo is read-only from the perspective of component teams. They can open PRs, but Domain Owners and Platform Architects merge. The system repo is owned by component teams. The separation enforces the knowledge governance boundary.
+</CalloutBox>
+
+</div>

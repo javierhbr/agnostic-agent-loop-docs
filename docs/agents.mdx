@@ -1,0 +1,86 @@
+---
+id: agents
+title: The Four Agents
+description: Analyst, Architect, Developer, Verifier — each a Markdown file with a clear mandate.
+---
+
+import { SectionHeader, ToolCard, CalloutBox } from '@site/src/components/tom';
+import styles from '@site/src/components/tom/tom.module.css';
+
+<SectionHeader num="04" title="The Four Agents" desc="Each agent is a Markdown file in .claude/agents/. They are loaded as sub-agents in Claude Code. They never share context — each session starts fresh from MCP." />
+
+<div className={`${styles.toolsGrid} fi`}>
+
+<ToolCard
+  accent="rust"
+  badge="Analyst"
+  title="analyst.md"
+  layer="Full workflow only · called by PM or Architect"
+  desc="Scopes initiatives before any specification work begins. Prevents over-engineering by forcing explicit boundary definition."
+  items={[
+    'Calls get_constitution() to check initiative policies',
+    'Identifies affected bounded contexts',
+    'Classifies risk level (low/medium/high/critical)',
+    'Recommends workflow (quick/standard/full)',
+    'Produces analyst.md — input to Architect',
+  ]}
+/>
+
+<ToolCard
+  accent="teal"
+  badge="Architect"
+  title="architect.md"
+  layer="Standard + Full workflows"
+  desc="Designs the cross-component solution. The only agent allowed to propose new contracts or modify platform-wide policies."
+  items={[
+    'Calls get_workflow() and get_contracts() from Platform MCP',
+    'Produces feature-spec.md with component changes',
+    'Declares new contracts — triggers Integration Owner review',
+    'Creates ADRs for significant decisions',
+    'Self-checks Gate 2 before handing off',
+  ]}
+/>
+
+<ToolCard
+  accent="navy"
+  badge="Developer"
+  title="developer.md"
+  layer="All workflows · one instance per component"
+  desc="Implements within a single bounded context. Calls Component MCP before writing a single line of spec. Never crosses component boundaries."
+  items={[
+    'Calls get_invariants() — reads every invariant before starting',
+    'Calls get_patterns() — uses only approved patterns',
+    'Writes implement-spec.md for Domain Owner review',
+    'Writes code that passes Gate 3 and Gate 4',
+    'Never reads another component\'s spec directly',
+  ]}
+/>
+
+</div>
+
+<div className="fi" style={{marginTop:'1.5rem'}}>
+
+<ToolCard
+  accent="teal"
+  badge="Verifier"
+  title="verifier.md"
+  layer="All workflows · runs last · may require human sign-off"
+  desc="The only agent with a cross-component view. Loads the full spec graph and verifies that all component outputs are consistent."
+  items={[
+    'Calls get_graph() to load the full spec dependency graph',
+    'Calls Component MCP for each affected component',
+    'Checks all contract interactions are implemented correctly',
+    'Produces verify.md with Gate 5 checklist',
+    'For High/Critical risk: flags for human approval before merge',
+  ]}
+/>
+
+</div>
+
+<div className="fi" style={{marginTop:'2.5rem'}}>
+
+<CalloutBox type="amber" label="Agent isolation rule">
+  **No agent reads the output of another agent directly.** The Architect does not read analyst.md as a file — it reads the initiative from Platform MCP. The Developer does not read feature-spec.md as a file — it reads the relevant component section from Platform MCP. This ensures MCP remains the single source of truth.
+</CalloutBox>
+
+</div>

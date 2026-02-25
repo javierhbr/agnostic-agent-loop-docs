@@ -1,0 +1,179 @@
+import type { Config } from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { ThemeConfig } from '@docusaurus/preset-classic';
+
+const config: Config = {
+  title: 'TOM · SDD + MCP',
+  tagline: 'Target Operating Model — Spec-Driven Development',
+  favicon: 'img/favicon.ico',
+
+  url: 'https://your-org.github.io',
+  baseUrl: '/',
+
+  organizationName: 'your-org',
+  projectName: 'tom-docs',
+
+  onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'warn',
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  // ── Client modules (scroll fade-in observer) ────────────
+  clientModules: [
+    require.resolve('./src/clientModules/fadeIn.ts'),
+  ],
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          routeBasePath: '/',           // Serve docs at site root
+          editUrl: 'https://github.com/your-org/tom-docs/edit/main/',
+          showLastUpdateTime: true,
+          showLastUpdateAuthor: false,
+          breadcrumbs: true,
+        },
+        blog: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themeConfig: {
+    // ── Color mode ───────────────────────────────────────
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
+
+    // ── Navbar ──────────────────────────────────────────
+    navbar: {
+      title: 'TOM · V3.0 · 2026',
+      logo: {
+        alt: 'TOM Logo',
+        src: 'img/logo.svg',
+        srcDark: 'img/logo-dark.svg',
+      },
+      items: [
+        { to: '/',              label: 'Why',       position: 'right' },
+        { to: '/big-idea',      label: 'Big Idea',  position: 'right' },
+        { to: '/tools',         label: 'Tools',     position: 'right' },
+        { to: '/structure',     label: 'Structure', position: 'right' },
+        { to: '/lifecycle',     label: 'Lifecycle', position: 'right' },
+        { to: '/agents',        label: 'Agents',    position: 'right' },
+        { to: '/prompts',       label: 'Prompts',   position: 'right' },
+        { to: '/roles',         label: 'Roles',     position: 'right' },
+        {
+          href: 'https://github.com/your-org/tom-docs',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+
+    // ── Docs sidebar ────────────────────────────────────
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
+    },
+
+    // ── Footer ──────────────────────────────────────────
+    footer: {
+      style: 'light',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            { label: 'Introduction',  to: '/'          },
+            { label: 'The Big Idea',  to: '/big-idea'  },
+            { label: 'Tools & MCPs',  to: '/tools'     },
+            { label: 'Lifecycle',     to: '/lifecycle' },
+            { label: 'Agents',        to: '/agents'    },
+          ],
+        },
+        {
+          title: 'Reference',
+          items: [
+            { label: 'Roles',       to: '/roles'    },
+            { label: 'Exit Gates',  to: '/gates'    },
+            { label: 'Prompts',     to: '/prompts'  },
+            { label: 'Scaling',     to: '/scaling'  },
+          ],
+        },
+        {
+          title: 'Resources',
+          items: [
+            { label: 'GitHub', href: 'https://github.com/your-org/tom-docs' },
+          ],
+        },
+      ],
+      copyright:
+        '"Software is no longer just built — it is specified, validated, and executed as a system of knowledge." — TOM v3.0',
+    },
+
+    // ── Syntax highlighting ─────────────────────────────
+    prism: {
+      theme: {
+        plain: {
+          backgroundColor: '#faf8f4',
+          color: '#2e3150',
+        },
+        styles: [
+          {
+            types: ['comment', 'prolog', 'doctype', 'cdata'],
+            style: { color: '#888ea8', fontStyle: 'italic' as const },
+          },
+          {
+            types: ['string', 'attr-value'],
+            style: { color: '#2a7d4f' },
+          },
+          {
+            types: ['punctuation', 'operator'],
+            style: { color: '#888ea8' },
+          },
+          {
+            types: ['number', 'boolean', 'variable', 'constant', 'property', 'regex'],
+            style: { color: '#1a7a6d' },
+          },
+          {
+            types: ['atrule', 'attr-name', 'selector'],
+            style: { color: '#1e2d6b' },
+          },
+          {
+            types: ['function', 'deleted', 'tag'],
+            style: { color: '#c47d0e' },
+          },
+          {
+            types: ['keyword'],
+            style: { color: '#b93030' },
+          },
+          {
+            types: ['function-variable'],
+            style: { color: '#2d5fcc' },
+          },
+        ],
+      },
+      darkTheme: prismThemes.dracula,
+      additionalLanguages: ['bash', 'yaml', 'json', 'markdown', 'typescript'],
+    },
+
+    // ── Table of contents ────────────────────────────────
+    tableOfContents: {
+      minHeadingLevel: 2,
+      maxHeadingLevel: 4,
+    },
+  } satisfies ThemeConfig,
+};
+
+export default config;

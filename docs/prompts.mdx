@@ -1,0 +1,86 @@
+---
+id: prompts
+title: Example Prompts
+description: Real prompts by role showing exactly how agents interact with MCP.
+---
+
+import { SectionHeader, TabPanel, PromptItem, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader num="06" title="Example Prompts" desc="Real prompts by role showing exactly how agents interact with Platform MCP and Component MCP. These are the conversations that make the system work." />
+
+<div className="fi">
+
+<CalloutBox type="navy" label="How to read these examples">
+  Each example shows: **who** is prompting (role badge), **what they want** (title), the **actual prompt** (bubble), and **what the agent does** (→ result). The agent always calls MCP — never reads files directly.
+</CalloutBox>
+
+<TabPanel
+  tabs={[
+    {
+      id: 'feature',
+      label: 'Feature',
+      content: (
+        <>
+          <PromptItem
+            badge="Product Manager"
+            badgeType="pm"
+            title="Kicking off a new feature initiative"
+            context="Context: PM wants to add real-time inventory checking to the checkout flow."
+            prompt="We need to show real-time inventory availability during checkout before the customer confirms their order. If an item goes out of stock between add-to-cart and purchase, we should block the order and show a friendly message. This is high priority for Q3."
+            result="Analyst agent calls Platform MCP get_constitution() to check policies, then get_workflow('full') since this touches Inventory and Checkout components (two bounded contexts = high risk). Produces analyst.md with initiative brief, affected components: [Inventory, Checkout, Cart], risk level: High, recommended workflow: Standard. Routes to Architect for feature-spec.md."
+          />
+          <PromptItem
+            badge="Platform Architect"
+            badgeType="arch"
+            title="Reviewing the architect's proposed contract change"
+            context="Context: Architect agent has proposed a new event: inventory.availability.checked"
+            prompt="The architect has proposed adding an inventory.availability.checked event to the Inventory component contract. Before I approve Gate 2, validate this against our contract governance policies and check if any existing consumers would be affected."
+            result="Architect agent calls Platform MCP get_contracts('inventory') to get current contract, then get_constitution() to check contract governance policies. Confirms the event is additive (not breaking), checks consumer list — Cart and Checkout are listed. Returns Gate 2 checklist with all items green. Notes that Checkout and Cart teams must be notified via PR comment per policy INV-CONTRACT-003."
+          />
+        </>
+      ),
+    },
+    {
+      id: 'contract',
+      label: 'Contract',
+      content: (
+        <>
+          <PromptItem
+            badge="Integration Owner"
+            badgeType="int"
+            title="Validating a breaking contract change"
+            context="Context: Cart team wants to rename cart_id to cart_token in their published contract."
+            prompt="The Cart team is proposing to rename cart_id to cart_token in their CartCreated event. This is in their feature-spec.md under Gate 2. Evaluate this change and tell me which consumers are affected and what they need to do."
+            result="Agent calls Component MCP get_contracts('cart') — finds CartCreated event consumers: [Checkout, Analytics, Notifications]. Calls Platform MCP get_constitution() — finds BREAKING-CHANGE-001: field renames require deprecation period of 2 sprints with dual-field support. Returns Gate 2 FAIL: breaking change requires dual-field period. Provides migration plan: add cart_token alongside cart_id for 2 sprints, then deprecate cart_id. Lists action items per consumer team."
+          />
+        </>
+      ),
+    },
+    {
+      id: 'component',
+      label: 'Component',
+      content: (
+        <>
+          <PromptItem
+            badge="Component Team"
+            badgeType="eng"
+            title="Checking a local design decision against domain invariants"
+            context="Context: Cart engineer wants to store checkout session state in Cart's Redis instance to simplify the architecture."
+            prompt="We're thinking of storing checkout session state in the Cart Redis — it's already there for cart sessions and would simplify the architecture. Is this okay from a domain perspective?"
+            result="Agent queries Component MCP and immediately flags two invariant violations: CART-INV-001 (Cart owns cart session state — Checkout must not store or mutate it) and CHK-INV-001 (Checkout owns order lifecycle — its session state must live in Checkout's own storage). Returns Gate 2 FAIL with specific invariant IDs and rationale. Explains the ownership model with a diagram. Suggests the correct pattern: Checkout creates its own Redis namespace (checkout-sessions:*) or Postgres table, referencing the cart via cart_token only."
+          />
+          <PromptItem
+            badge="Component Team"
+            badgeType="eng"
+            title="Getting approved patterns before implementing"
+            context="Context: New engineer starting implementation of a payment retry mechanism."
+            prompt="I'm implementing the payment retry mechanism from implement-spec.md. Before I write the code, what are the approved patterns for retry logic in the Payment component, and are there any invariants I need to be aware of?"
+            result="Agent calls Component MCP get_patterns('payment') — returns RETRY-PATTERN-001 (exponential backoff with jitter, max 3 attempts, dead-letter queue on final failure). Calls get_invariants('payment') — returns PAY-INV-003 (idempotency key required on all payment mutations) and PAY-INV-007 (never retry after a successful charge event — check idempotency key first). Returns structured guide with code skeleton showing the approved pattern applied to the retry use case."
+          />
+        </>
+      ),
+    },
+  ]}
+/>
+
+</div>

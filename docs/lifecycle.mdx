@@ -1,0 +1,69 @@
+---
+id: lifecycle
+title: Lifecycle & Workflows
+description: Four workflows matching risk level. Every step calls MCP.
+---
+
+import { SectionHeader, FlowStep, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader num="03" title="Lifecycle & Workflows" desc="Four workflows — quick, standard, full, hotfix — selected by risk level. Every agent step calls Platform or Component MCP before producing output." />
+
+<div className="fi">
+
+## Workflow Selection
+
+| Risk Level | Trigger | Workflow | Agents |
+|---|---|---|---|
+| **Low** | Single-component, no contract changes | Quick | Developer → Verifier |
+| **Medium** | Multi-component or contract additions | Standard | Architect → Developer(s) → Verifier |
+| **High / Critical** | Cross-cutting, new contracts, or `guaripolo` flag | Full | Analyst → Architect → Developer(s) → Verifier |
+| **Any** | Production bug, revert needed | Hotfix | Developer → Verifier (expedited) |
+
+</div>
+
+<div className="fi">
+
+## Standard Workflow — Step by Step
+
+<FlowStep
+  role="Product Manager"
+  roleAccent="pm"
+  roleRepo="Platform Repo"
+  title="Initiative Brief"
+  desc="PM creates initiative in platform repo. Analyst agent (if full workflow) calls Platform MCP to load constitution and workflow template. Produces analyst.md with scope, affected components, and risk classification."
+/>
+
+<FlowStep
+  role="Platform Architect"
+  roleAccent="arch"
+  roleRepo="Specs Repo"
+  title="Feature Specification"
+  desc="Architect agent calls Platform MCP get_workflow(), get_contracts() for all affected components. Produces feature-spec.md: component changes, new contracts, ADRs. Architect reviews and approves Gate 2."
+/>
+
+<FlowStep
+  role="Component Teams"
+  roleAccent="eng"
+  roleRepo="System Repo"
+  title="Implementation (parallel fan-out)"
+  desc="Developer agent per component. Each calls Component MCP get_invariants(), get_patterns() before writing implement-spec.md. All developers run in parallel. Gate 3 per component."
+/>
+
+<FlowStep
+  role="Domain Owners"
+  roleAccent="comp"
+  roleRepo="Specs + System Repo"
+  title="Domain Review"
+  desc="Domain Owner reviews implement-spec.md. Checks Gate 3 checklist: invariants respected, patterns followed, no cross-domain side effects. Signs off before implementation begins."
+/>
+
+<FlowStep
+  role="Verifier Agent"
+  roleAccent="arch"
+  roleRepo="Specs Repo"
+  title="Cross-component Verification"
+  desc="Verifier calls Platform MCP get_graph() to load the full spec dependency graph. Calls Component MCP for each component to validate contracts align. Produces verify.md with Gate 5 checklist."
+  isLast={true}
+/>
+
+</div>

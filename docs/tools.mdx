@@ -1,0 +1,145 @@
+---
+id: tools
+title: Tools & MCPs
+description: Two MCP servers, four agents, zero overhead infrastructure.
+---
+
+import { SectionHeader, ToolCard, CalloutBox, LayerStack } from '@site/src/components/tom';
+import styles from '@site/src/components/tom/tom.module.css';
+
+<SectionHeader num="01" title="Tools & MCPs" desc="Two MCP servers that serve governed knowledge. Four Markdown agents that carry the process. Zero overhead services." />
+
+<div className={`${styles.toolsGrid} fi`}>
+
+<ToolCard
+  accent="rust"
+  badge="Platform MCP"
+  title="Platform MCP"
+  layer="Cross-cutting · Governed by Platform Architect"
+  desc="Serves the constitution, workflow templates, and cross-cutting contracts. Any agent or engineer can call it to get authoritative platform context."
+  items={[
+    'get_constitution() — policies and principles',
+    'get_workflow(name) — agent workflow templates',
+    'get_contracts(component) — integration contracts',
+    'get_graph() — full spec dependency graph',
+    'validate_gate(gate, checklist) — gate evaluation',
+  ]}
+/>
+
+<ToolCard
+  accent="teal"
+  badge="Component MCP"
+  title="Component MCP"
+  layer="Per-component · Governed by Domain Owner"
+  desc="One instance per bounded context. Serves domain invariants, local patterns, and component-specific ADRs. Developer and Verifier agents call this first."
+  items={[
+    'get_invariants() — domain rules that cannot be broken',
+    'get_patterns() — approved implementation patterns',
+    'get_adrs() — architectural decisions for this component',
+    'get_contracts() — contracts this component publishes',
+    'check_invariant(rule, proposal) — violation detection',
+  ]}
+/>
+
+<ToolCard
+  accent="navy"
+  badge="Agent Layer"
+  title="Four Agents"
+  layer="Markdown files in .claude/agents/"
+  desc="Analyst, Architect, Developer, Verifier. Each is a Markdown file with a system prompt. They never share context — each reads from MCP fresh."
+  items={[
+    'analyst.md — initiative discovery and scoping',
+    'architect.md — feature spec and contract design',
+    'developer.md — implementation spec and code',
+    'verifier.md — multi-component gate validation',
+  ]}
+/>
+
+</div>
+
+<div className="fi" style={{ marginTop: '3rem' }}>
+
+## The Knowledge Layer Stack
+
+<LayerStack
+  layers={[
+    {
+      bg: 'k',
+      label: 'Knowledge Layer',
+      sub: 'openclaw-specs/ repo',
+      pills: [
+        { text: 'constitution/', type: 'k' },
+        { text: 'initiatives/', type: 'k' },
+        { text: 'contracts/', type: 'k' },
+        { text: 'agents/', type: 'k' },
+        { text: 'graph/index.yaml', type: 'k' },
+      ],
+    },
+    {
+      bg: 's',
+      label: 'Platform MCP',
+      sub: 'serves cross-cutting context',
+      pills: [
+        { text: 'get_constitution()', type: 's' },
+        { text: 'get_workflow()', type: 's' },
+        { text: 'get_contracts()', type: 's' },
+        { text: 'get_graph()', type: 's' },
+      ],
+    },
+    {
+      bg: 'c',
+      label: 'Component MCP',
+      sub: 'per bounded context',
+      pills: [
+        { text: 'get_invariants()', type: 'c' },
+        { text: 'get_patterns()', type: 'c' },
+        { text: 'get_adrs()', type: 'c' },
+        { text: 'check_invariant()', type: 'c' },
+      ],
+    },
+    {
+      bg: 'o',
+      label: 'Agent Layer',
+      sub: '.claude/agents/ — Markdown files',
+      pills: [
+        { text: 'analyst', type: 'o' },
+        { text: 'architect', type: 'o' },
+        { text: 'developer', type: 'o' },
+        { text: 'verifier', type: 'o' },
+      ],
+    },
+  ]}
+/>
+
+</div>
+
+<div className="fi" style={{ marginTop: '3rem' }}>
+
+## MCP vs. Direct File Access
+
+<CalloutBox type="red" label="Never do this:">
+
+```bash
+# ❌ Agent reads spec files directly
+cat openclaw-specs/constitution/policies.md
+cat components/cart/invariants.yaml
+```
+
+This bypasses governance. Files can be incomplete, the agent doesn't get structured responses, and there's no audit trail.
+
+</CalloutBox>
+
+<CalloutBox type="teal" label="Always do this:">
+
+```bash
+# ✅ Agent calls MCP
+platform_mcp.get_constitution()
+component_mcp.get_invariants("cart")
+component_mcp.check_invariant("CART-INV-001", proposal)
+```
+
+MCP validates the call, returns structured data, logs the access, and can return computed results like invariant violation checks.
+
+</CalloutBox>
+
+</div>
