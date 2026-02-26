@@ -64,14 +64,63 @@ const config: Config = {
         srcDark: 'img/logo-dark.svg',
       },
       items: [
-        { to: '/',              label: 'Why',       position: 'right' },
-        { to: '/big-idea',      label: 'Big Idea',  position: 'right' },
-        { to: '/tools',         label: 'Tools',     position: 'right' },
-        { to: '/structure',     label: 'Structure', position: 'right' },
-        { to: '/lifecycle',     label: 'Lifecycle', position: 'right' },
-        { to: '/agents',        label: 'Agents',    position: 'right' },
-        { to: '/prompts',       label: 'Prompts',   position: 'right' },
-        { to: '/roles',         label: 'Roles',     position: 'right' },
+        {
+          type: 'dropdown',
+          label: 'Core Concepts',
+          position: 'right',
+          items: [
+            { to: '/big-idea', label: 'The Big Idea' },
+            { to: '/tools', label: 'Tools & MCPs' },
+            { to: '/structure', label: 'Repository Structure' },
+            { to: '/usage-levels', label: 'Usage Levels' },
+          ],
+        },
+        {
+          type: 'dropdown',
+          label: 'Process',
+          position: 'right',
+          items: [
+            { to: '/lifecycle', label: 'Development Lifecycle' },
+            { to: '/agents', label: 'The Four Agents' },
+            { to: '/gates', label: 'The 5 Gates' },
+            { to: '/prompts', label: 'Example Prompts' },
+          ],
+        },
+        {
+          type: 'dropdown',
+          label: 'How-to Guides',
+          position: 'right',
+          items: [
+            { to: '/small-projects', label: 'Small Projects' },
+            { to: '/monorepo-openspec', label: 'Monorepo OpenSpec' },
+            { to: '/prompting-guide', label: 'Prompting Guide' },
+          ],
+        },
+        {
+          type: 'dropdown',
+          label: 'Explanation',
+          position: 'right',
+          items: [
+            { to: '/workflow-diagrams', label: 'Workflow Diagrams' },
+          ],
+        },
+        {
+          type: 'dropdown',
+          label: 'Reference',
+          position: 'right',
+          items: [
+            { to: '/cli-cheatsheet', label: 'CLI Cheat Sheet' },
+          ],
+        },
+        {
+          type: 'dropdown',
+          label: 'Operations',
+          position: 'right',
+          items: [
+            { to: '/roles', label: 'Roles & Responsibilities' },
+            { to: '/scaling', label: 'Scaling Guide' },
+          ],
+        },
         {
           href: 'https://github.com/your-org/tom-docs',
           label: 'GitHub',
