@@ -46,6 +46,21 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Agentic Agent CLI',
+      collapsed: false,
+      items: [
+        'agentic-agent-cli/overview',
+        'agentic-agent-cli/quickstart',
+        'agentic-agent-cli/idea-refine',
+        'agentic-agent-cli/installation',
+        'agentic-agent-cli/configuration',
+        'agentic-agent-cli/commands',
+        'agentic-agent-cli/skills',
+        'agentic-agent-cli/automation',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Explanation',
       collapsed: true,
       items: [

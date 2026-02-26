@@ -1,0 +1,81 @@
+---
+id: overview
+title: Agentic Agent CLI
+slug: /agentic-agent-cli
+description: "A CLI that gives AI agents a structured loop: specs, context, tasks, and validation."
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="14"
+  title="Agentic Agent CLI"
+  desc="A structure-first CLI for running AI-assisted development without losing context, scope, or validation."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  Explanation. This section describes the CLI model and how the parts fit together. For a step-by-step first run, see [/agentic-agent-cli/quickstart](/agentic-agent-cli/quickstart).
+</CalloutBox>
+
+## What it fixes
+
+Without structure, agents tend to:
+
+- Lose context (they do not know prior decisions or constraints).
+- Change too much at once (sprawl across files and directories).
+- Skip verification (code compiles but does not meet the spec).
+- Lock you into a single tool (workflow changes when you change agents/IDEs).
+
+Agentic Agent standardizes the loop so different tools can follow the same playbook.
+
+## The model: Specs + Context + Tasks + Validation
+
+```text
+                         Your Project
+                             |
+           +-----------------+-----------------+
+           |                 |                 |
+       Specs             Context            Tasks
+   (source of truth)  (per-directory)   (atomic units)
+           |                 |                 |
+           +--------+--------+--------+--------+
+                    |                 |
+              Claim + Build       Validate
+            (readiness checks)   (scope, context)
+                    |                 |
+                    +--------+--------+
+                             |
+                     Complete + Learn
+```
+
+- Specs are the source of truth (what to build, constraints, acceptance criteria).
+- Context keeps the agent focused (directory purpose, dependencies, invariants).
+- Tasks enforce atomic scope (small, reviewable units).
+- Validation prevents drift (scope, missing context/specs, policy checks).
+
+## The core loop
+
+```text
+  track init --> brainstorm --> refine spec --> activate
+       |                                          |
+       |                          generate plan + decompose tasks
+       |                                          |
+       +--- complete <--- validate <--- claim + implement
+```
+
+## Interactive mode vs flags
+
+Every command supports:
+
+- Interactive wizards (run with no args).
+- Flag mode (scriptable, repeatable).
+
+```bash
+agentic-agent track init                         # Interactive wizard
+agentic-agent track init "Auth" --purpose "..."  # Flag mode
+```
+
+## Where this fits in this docs site
+
+- If you are choosing a workflow (tasks vs OpenSpec vs SDD): see [/usage-levels](/usage-levels).
+- If you want a one-page command lookup: see [/cli-cheatsheet](/cli-cheatsheet).

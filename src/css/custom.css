@@ -699,3 +699,110 @@ hr {
   background: linear-gradient(90deg, var(--tom-rust), var(--tom-amber), var(--tom-rust));
   z-index: 1000;
 }
+
+/* ── IDEA REFINE (AGENTIC AGENT CLI) ─────────────────────── */
+.tom-idea-refine h3 {
+  margin-top: 1.65rem;
+  margin-bottom: .55rem;
+}
+
+.tom-idea-refine h3:first-child {
+  margin-top: 0;
+}
+
+.tom-idea-refine p {
+  margin-bottom: .85rem;
+}
+
+/* Keep code blocks from "floating" with inconsistent margins inside tabs */
+.tom-idea-refine .theme-code-block {
+  margin: .85rem 0 1.15rem;
+}
+
+.tom-idea-refine__stack {
+  display: grid;
+  gap: .9rem;
+  margin-top: .8rem;
+  margin-bottom: 1.2rem;
+}
+
+.tom-idea-refine__stack .theme-code-block {
+  margin: 0;
+}
+
+.tom-idea-refine__outputs {
+  display: grid;
+  gap: .85rem;
+  margin-top: .25rem;
+}
+
+/* Make <details> look like a tight, aligned accordion (instead of the default "alert" look) */
+.tom-idea-refine__details {
+  border: 1px solid var(--tom-border);
+  border-radius: 10px;
+  background: var(--tom-surface);
+  box-shadow: var(--tom-shadow-sm);
+  overflow: hidden;
+}
+
+.tom-idea-refine__details > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .6rem;
+  padding: .9rem 1.1rem;
+  padding-left: 1.2rem;
+  font-family: var(--tom-mono);
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--tom-ink3);
+  background: var(--tom-surface2);
+  border-bottom: 1px solid var(--tom-border);
+}
+
+.tom-idea-refine__details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.tom-idea-refine__details > summary::marker {
+  content: '';
+  display: none;
+}
+
+/* Custom left chevron (the native disclosure marker sits awkwardly with our flex header) */
+.tom-idea-refine__details > summary::before {
+  content: '';
+  display: none !important;
+}
+
+.tom-idea-refine__details[open] > summary::before {
+  transform: none;
+}
+
+.tom-idea-refine__details > summary::after {
+  content: '+';
+  font-family: var(--tom-mono);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--tom-teal);
+  opacity: 0.9;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-left: auto;
+}
+
+.tom-idea-refine__details[open] > summary::after {
+  content: '-';
+}
+
+.tom-idea-refine__detailsBody {
+  padding: 1rem 1.1rem 1.1rem;
+}
+
+.tom-idea-refine__detailsBody .theme-code-block {
+  margin: 0;
+}

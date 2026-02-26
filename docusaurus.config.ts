@@ -98,6 +98,21 @@ const config: Config = {
         },
         {
           type: 'dropdown',
+          label: 'Agentic Agent CLI',
+          position: 'right',
+          items: [
+            { to: '/agentic-agent-cli', label: 'Overview' },
+            { to: '/agentic-agent-cli/quickstart', label: 'Quick Start' },
+            { to: '/agentic-agent-cli/idea-refine', label: 'Idea Refinement' },
+            { to: '/agentic-agent-cli/installation', label: 'Installation' },
+            { to: '/agentic-agent-cli/configuration', label: 'Configuration' },
+            { to: '/agentic-agent-cli/commands', label: 'Commands' },
+            { to: '/agentic-agent-cli/skills', label: 'Skill Packs' },
+            { to: '/agentic-agent-cli/automation', label: 'Automation' },
+          ],
+        },
+        {
+          type: 'dropdown',
           label: 'Explanation',
           position: 'right',
           items: [

@@ -1,0 +1,82 @@
+---
+id: skills
+title: Skill Packs
+slug: /agentic-agent-cli/skills
+description: Install, update, and target reusable instruction packs across tools (Claude, Cursor, Gemini, Codex, etc.).
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="14d"
+  title="Skill Packs"
+  desc="Tool-agnostic instruction packs that install into the right directory for each agent tool."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  How-to. Use this when you want consistent agent behavior across tools and tasks.
+</CalloutBox>
+
+## Install a pack
+
+```bash title="Install a skill pack"
+agentic-agent skills list
+agentic-agent skills install tdd --tool claude-code
+```
+
+Install for multiple tools:
+
+```bash
+agentic-agent skills install tdd --tool claude-code,cursor,gemini
+```
+
+Install globally (user-level):
+
+```bash
+agentic-agent skills install tdd --tool claude-code --global
+```
+
+## Packs used in idea refinement examples
+
+If you are using Agentic Agent for non-code idea refinement (PRD -> plan -> tests), these packs are commonly referenced:
+
+- `product-wizard` (discovery + PRD)
+- `dev-plans` (phased implementation plan)
+- `atdd` (acceptance tests from criteria)
+- `code-simplification` (simplify ambiguous/over-complex requirements)
+
+Examples: [/agentic-agent-cli/idea-refine](/agentic-agent-cli/idea-refine).
+
+## Where packs land
+
+| Tool | Project directory |
+|---|---|
+| Claude Code | `.claude/skills/` |
+| Cursor | `.cursor/skills/` |
+| Gemini CLI | `.gemini/skills/` |
+| Windsurf | `.windsurf/skills/` |
+| Antigravity | `.agent/skills/` |
+| Codex | `.codex/skills/` |
+
+## Task-level `skill_refs` (recommended)
+
+Declare `skill_refs` on a task to include only the packs that matter for that task.
+
+```yaml title=".agentic/tasks/backlog.yaml (example)"
+tasks:
+  - id: "TASK-001"
+    title: "Refactor auth middleware"
+    skill_refs:
+      - code-simplification
+      - tdd
+    scope:
+      - "internal/auth"
+```
+
+When the CLI builds the context bundle for `TASK-001`, it includes only those skill packs.
+
+## Keep packs up to date
+
+```bash
+agentic-agent skills ensure
+```

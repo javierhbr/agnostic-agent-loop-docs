@@ -519,6 +519,14 @@
 
 .pPanel {
   display: block;
+  /* Give tab content a consistent inner rhythm (used by prompts + idea-refine docs). */
+  padding: 1.6rem 2rem;
+}
+
+@media (max-width: 996px) {
+  .pPanel {
+    padding: 1.25rem 1.25rem;
+  }
 }
 
 /* ── PROMPT ITEM ─────────────────────────────────────────── */
