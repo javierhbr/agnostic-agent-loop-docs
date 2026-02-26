@@ -1,0 +1,257 @@
+---
+id: cli-cheatsheet
+title: CLI Cheat Sheet
+description: One-page reference for tasks, OpenSpec, monorepo setup, and completion flow.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="11"
+  title="CLI Cheat Sheet"
+  desc="Quick lookup for selecting a workflow, running core commands, and keeping structure consistent."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  Reference. This page favors fast lookup over deep explanation. For step-by-step guides, see [/small-projects](/small-projects) and [/monorepo-openspec](/monorepo-openspec).
+</CalloutBox>
+
+## Choose Your Workflow
+
+```text
+Bug fix / small refactor (< 1 day)?
+  Use: agentic-agent task
+
+Single feature (1-2 weeks, 1 package)?
+  Use: agentic-agent openspec init + tasks
+
+Monorepo (multiple packages / parallel teams)?
+  Use: OpenSpec + multi-path specDirs
+
+High-risk (payments/auth/PII/regulatory)?
+  Use: SDD + gates (risk-proportional)
+```
+
+## Quick Commands
+
+### Tasks (simplest loop)
+
+```bash
+agentic-agent task create "Your task"
+agentic-agent task list
+agentic-agent task claim <task-id>
+agentic-agent task complete <task-id>
+```
+
+### OpenSpec (lightweight spec + decomposition)
+
+```bash
+agentic-agent openspec init "Name" --from requirements.md
+agentic-agent openspec list
+agentic-agent openspec show <change-id>
+agentic-agent openspec status <change-id>
+agentic-agent openspec check <change-id>
+agentic-agent openspec complete <change-id>
+agentic-agent openspec archive <change-id>
+```
+
+### SDD (high-risk only)
+
+```bash
+agentic-agent sdd start "Name" --risk critical
+agentic-agent sdd workflow show <initiative-id>
+agentic-agent sdd gate-check <spec-id>
+agentic-agent sdd adr create --title "Decision"
+agentic-agent sdd adr resolve <adr-id>
+```
+
+## Workflow Comparison (Fast)
+
+| Workflow | Use for | Typical timeline | Gates |
+|---|---|---:|---|
+| `task` | Bugs, hotfixes, tiny refactors | hours to 1 day | none |
+| `openspec` | Features with acceptance criteria | 1-2 weeks | optional / lightweight |
+| `sdd` | High/critical risk changes | 3+ weeks | mandatory |
+
+## Project Structure
+
+### Single package
+
+```text
+myproject/
+├── agnostic-agent.yaml
+├── requirements.md
+├── src/
+└── .agentic/
+    ├── openspec/changes/
+    └── tasks/
+```
+
+### Monorepo
+
+```text
+mymonorepo/
+├── agnostic-agent.yaml
+├── specs/                 (optional shared specs)
+├── packages/
+│   └── <pkg>/
+│       ├── specs/         (specs live with code)
+│       └── src/
+└── .agentic/
+    ├── openspec/changes/  (central change tracking)
+    └── tasks/
+```
+
+## Config Templates
+
+### Minimal (single package)
+
+```yaml
+# agnostic-agent.yaml
+project:
+  name: MyProject
+  version: 0.1.0
+
+agents:
+  defaults:
+    model: claude-3-5-sonnet-20241022
+
+paths:
+  openSpecDir: .agentic/openspec/changes
+```
+
+### Monorepo (multi-path spec discovery)
+
+```yaml
+# agnostic-agent.yaml
+project:
+  name: MyMonorepo
+  version: 0.1.0
+
+agents:
+  defaults:
+    model: claude-3-5-sonnet-20241022
+
+paths:
+  openSpecDir: .agentic/openspec/changes
+  specDirs:
+    - packages/*/specs
+    - apps/*/specs
+    - specs
+```
+
+## Implementation Workflow (Plan -> Build -> Verify)
+
+```text
+Day 1: Plan
+  write spec -> openspec init -> proposal.md + tasks.md
+
+Days 2-N: Build
+  claim task -> code + tests -> complete task
+
+Final: Verify and close
+  openspec status -> verify ACs -> openspec complete -> archive
+```
+
+## Prompt Shortcuts (When You Use an AI Agent)
+
+For the full prompt library, see [/prompting-guide](/prompting-guide).
+
+1. Spec review: "Break this spec into concrete tasks per acceptance criterion."
+2. Package-specific: "Design + code sketch + files + tests for this task in `packages/<pkg>`."
+3. Integration: "What does the consumer need to do? contracts + error handling."
+4. Testing: "Test structure + mocks for these acceptance criteria."
+5. Verification: "Show pass/fail evidence for each acceptance criterion."
+6. Dependency analysis: "Implementation order + rollout strategy + mock plan."
+7. Documentation: "Generate developer docs: overview, API, lifecycle, errors, testing, troubleshooting."
+
+## Real Examples (Copy/Paste)
+
+### Quick bug fix
+
+```bash
+agentic-agent task create "Fix login timeout"
+agentic-agent task claim <task-id>
+# ... fix + tests ...
+agentic-agent task complete <task-id>
+```
+
+### Small feature (single package)
+
+```bash
+cat > requirements.md << 'EOF'
+# Product Search
+
+## What
+Add search + filters to product page.
+
+## Acceptance
+- [ ] Search box appears
+- [ ] Results filter in < 500ms
+- [ ] Mobile responsive
+EOF
+
+agentic-agent openspec init "Product Search" --from requirements.md
+```
+
+### Monorepo (package-local specs)
+
+```bash
+mkdir -p packages/auth-service/specs
+cat > packages/auth-service/specs/oauth.md << 'EOF'
+# OAuth Provider
+## Problem
+...
+## Acceptance Criteria
+- [ ] ...
+EOF
+
+agentic-agent openspec init "OAuth Provider" --from packages/auth-service/specs/oauth.md
+```
+
+## Spec Template (Copy/Paste)
+
+```markdown
+# [Feature Name]
+
+## Problem
+[What user problem does this solve? 1-2 sentences]
+
+## Solution
+[What you're building]
+
+## Acceptance Criteria
+- [ ] [Testable outcome]
+- [ ] [Testable outcome]
+- [ ] [Testable outcome]
+
+## Tasks
+1. [Task description]
+   - Files: [what you'll modify]
+   - Acceptance: [how to verify]
+
+2. [Task description]
+   - Files: [what you'll modify]
+   - Acceptance: [how to verify]
+
+## Notes
+[Anything else the team should know]
+```
+
+## Common Gotchas
+
+| Problem | Fix |
+|---|---|
+| "Where do specs go?" | Single package: next to `requirements.md`; monorepo: `packages/*/specs/` |
+| "Can I use specs and tasks?" | Yes: specs for planning, tasks for tracking |
+| "What if the spec changes?" | Update the file and regenerate tasks as needed |
+| "Do I need gates?" | Use gates for high-risk only; keep low-risk work fast |
+
+## Help
+
+```bash
+agentic-agent --help
+agentic-agent task --help
+agentic-agent openspec --help
+agentic-agent sdd --help
+```

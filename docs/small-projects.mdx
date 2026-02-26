@@ -1,0 +1,228 @@
+---
+id: small-projects
+title: Small Projects
+description: How to use OpenSpec + tasks with minimal ceremony for teams of 1-3.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="09"
+  title="Small Projects"
+  desc="Small projects do not need full ceremony. Use the minimum structure that keeps you moving fast without losing clarity."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  How-to. This page is task-oriented. If you want the conceptual model first, read [/usage-levels](/usage-levels).
+</CalloutBox>
+
+## Pick a Small-Project Tier
+
+| Tier | Team | Risk | Use | Timeline |
+|---|---:|---|---|---:|
+| **Tiny** | 1 | low | tasks only | hours to 1 day |
+| **Small** | 1-2 | low/medium | OpenSpec + tasks | 1-2 weeks |
+| **Medium** | 2-3 | medium | light Platform + OpenSpec | 2-3 weeks |
+
+## Tiny: Bug Fix or Small Refactor (Tasks Only)
+
+### Steps
+
+```bash
+agentic-agent task create "Fix login timeout bug"
+agentic-agent task claim <task-id>
+# ... implement + tests ...
+agentic-agent task complete <task-id>
+```
+
+### Optional: add a 1-paragraph note (only if you need memory later)
+
+```bash
+mkdir -p .agentic/specs/login-timeout-fix
+cat > .agentic/specs/login-timeout-fix/README.md << 'EOF'
+# Login Timeout Fix
+
+## Problem
+Users are logged out after 15 minutes of inactivity, even on idle tabs.
+
+## Solution
+Keep refresh token alive with silent renewal on focus.
+
+## Tasks
+- [ ] Add focus listener to renew token
+- [ ] Test with 30-min idle
+- [ ] Update docs
+EOF
+```
+
+## Small: 1-2 Week Feature (OpenSpec + Tasks)
+
+### Steps
+
+1. Write a short `requirements.md` (problem + acceptance criteria).
+2. Initialize OpenSpec.
+3. Work task-by-task.
+4. Verify acceptance criteria, then complete and archive.
+
+```bash
+agentic-agent openspec init "User Dashboard" --from requirements.md --type feature
+agentic-agent task claim <task-id>
+# ... implement + tests ...
+agentic-agent task complete <task-id>
+agentic-agent openspec complete <change-id>
+agentic-agent openspec archive <change-id>
+```
+
+### What to write in `proposal.md`
+
+Keep it short:
+
+```markdown
+# User Dashboard
+
+## What
+Display user profile, recent orders, preferences in one view.
+
+## Why
+Users currently click through 3 pages to see their data.
+Goal: reduce time-to-profile-view from 4 clicks to 1.
+
+## Acceptance
+- [ ] Dashboard loads in < 500ms
+- [ ] Shows profile, orders, preferences
+- [ ] Mobile responsive
+```
+
+### What to write in `tasks.md`
+
+Decompose into tasks that one developer can complete in 1-3 days:
+
+```markdown
+# Tasks
+
+## Backend
+1. Create `GET /api/user/dashboard`
+   - Acceptance: returns profile + orders + preferences (200)
+2. Add caching (5 min TTL)
+3. Add integration tests
+
+## Frontend
+4. Create Dashboard page
+5. Add profile section
+6. Add orders section
+7. Mobile responsive styles
+
+## QA
+8. Test on mobile devices
+9. Test with slow network (DevTools throttle)
+```
+
+### Minimal gate for small projects (optional)
+
+If you touch external systems (payments/auth/integrations), run a basic check before completion:
+
+```bash
+agentic-agent openspec check <change-id>
+```
+
+## Medium: 2-3 Services, 2-3 People (Light Platform + OpenSpec)
+
+Use a 1-page platform spec to align on contracts and responsibilities, then let each team implement via OpenSpec.
+
+### Steps
+
+```bash
+# platform lead writes the 1-page spec
+agentic-agent platform init
+agentic-agent platform add-feature \
+  --name "Guest Checkout" \
+  --initiative "CHECKOUT-2025" \
+  --context-pack "cp-v2" \
+  --fanout "checkout-service,payments-service"
+
+# each component team implements via OpenSpec
+cd checkout-service/
+agentic-agent openspec init "Guest checkout flow" --from ../platform-specs/guest-checkout/spec.md
+```
+
+## When to Upgrade (Stop Being "Small")
+
+Upgrade to Platform or SDD Full if any of these become true:
+
+- Risk increases: payments, auth, PII, regulatory concerns.
+- The task graph grows: more than ~10 tasks or circular dependencies.
+- Cross-team ownership: multiple teams own different services.
+- Blocking decisions exist: you need ADRs to proceed safely.
+
+## Templates (Copy/Paste)
+
+### Small project spec
+
+```markdown
+# [Feature Name]
+
+## Problem
+[What user problem does this solve? 1-2 sentences]
+[Metric: how will you measure success?]
+
+## Solution
+[What you're building]
+
+## What Changes
+- Service 1: [what]
+- Service 2: [what]
+(optional; skip if single service)
+
+## Acceptance Criteria
+- [ ] [Testable outcome]
+- [ ] [Testable outcome]
+- [ ] [Testable outcome]
+
+## Tasks
+1. [Task description]
+   - Acceptance: [how to verify]
+2. [Task description]
+   - Acceptance: [how to verify]
+
+## Notes
+(anything else the team should know)
+```
+
+### Small project tasks
+
+```markdown
+# Tasks
+
+## Backend
+1. [Task name]
+   - Files: [what you'll modify]
+   - Acceptance: [pass test: X]
+
+## Frontend
+2. [Task name]
+   - Files: [what you'll modify]
+   - Acceptance: [visual check: X]
+
+## Testing
+3. [Task name]
+   - Acceptance: [tests pass]
+```
+
+<details>
+  <summary>Optional: "Superpowers" integrations (quality boosts without full SDD)</summary>
+
+This is optional guidance for teams that want stricter quality on small projects (brainstorming, TDD, verification gates) without adopting full SDD ceremony.
+
+Use it when:
+- Requirements are vague and you need a structured clarify pass.
+- Business logic is critical (payments/auth).
+- A bug is subtle and needs a systematic debugging loop.
+
+For a prompt-oriented workflow, see [/prompting-guide](/prompting-guide).
+
+</details>
+
+## Next
+
+- Monorepo teams: [/monorepo-openspec](/monorepo-openspec)
+- Command lookup: [/cli-cheatsheet](/cli-cheatsheet)

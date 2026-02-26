@@ -1,0 +1,184 @@
+---
+id: monorepo-openspec
+title: Monorepo OpenSpec
+description: How to run OpenSpec in a monorepo with package-local specs and centralized change tracking.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="10"
+  title="Monorepo OpenSpec"
+  desc="Specs live with packages. OpenSpec tracks changes centrally. Multi-path discovery keeps teams unblocked."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  How-to. This page shows a practical monorepo setup. If you want to understand the discovery algorithm first, see [/workflow-diagrams](/workflow-diagrams).
+</CalloutBox>
+
+## TL;DR
+
+1. One root `agnostic-agent.yaml` enables multi-path spec discovery.
+2. Specs live near code: `packages/*/specs/` (and optionally `apps/*/specs/`, `specs/`).
+3. OpenSpec changes track centrally: `.agentic/openspec/changes/`.
+4. Teams implement in parallel per package.
+5. Prompts help with integration and sequencing: [/prompting-guide](/prompting-guide).
+
+## One-Time Setup
+
+### 1) Root config
+
+Create or update `agnostic-agent.yaml` in repo root:
+
+```yaml
+project:
+  name: MyMonorepo
+  version: 0.1.0
+  roots:
+    - .
+
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
+
+paths:
+  openSpecDir: .agentic/openspec/changes
+  specDirs:
+    - packages/*/specs
+    - apps/*/specs
+    - specs
+  contextDirs:
+    - .agentic/context
+```
+
+### 2) Package spec directories
+
+```bash
+mkdir -p packages/service-a/specs
+mkdir -p packages/service-b/specs
+mkdir -p specs
+```
+
+## Create Specs Per Package
+
+### Recommended structure
+
+```text
+packages/
+├── service-a/
+│   ├── specs/
+│   │   ├── auth-oauth.md
+│   │   └── logging-upgrade.md
+│   └── src/
+└── service-b/
+    ├── specs/
+    │   └── webhook-retry.md
+    └── src/
+```
+
+### Example spec file
+
+`packages/service-a/specs/auth-oauth.md`
+
+```markdown
+# OAuth Integration
+
+## Problem
+Users can only authenticate with username/password. We need OAuth support (Google, GitHub).
+
+## Solution
+Integrate OAuth 2.0 flow using industry-standard libraries.
+
+## What Changes
+- Add OAuth provider abstraction
+- Create /auth/callback endpoint
+- Store provider tokens in database
+- Update login UI with provider buttons
+
+## Acceptance Criteria
+- [ ] Users can login with Google
+- [ ] Users can login with GitHub
+- [ ] Tokens refresh automatically
+- [ ] Existing password auth still works
+- [ ] Tests cover both flows
+
+## Notes
+- Avoid vendor lock-in to single OAuth library
+- Keep token storage encrypted
+- Set refresh token expiry to 30 days
+```
+
+## Initialize OpenSpec From a Package Spec
+
+```bash
+agentic-agent openspec init "OAuth Integration" \
+  --from packages/service-a/specs/auth-oauth.md
+```
+
+What happens:
+- CLI finds the spec via `specDirs` (first match wins).
+- It creates a change under `.agentic/openspec/changes/<change-id>/`.
+- It generates (or updates) `proposal.md` and `tasks.md`.
+
+## Work Task-by-Task (Per Package)
+
+```bash
+agentic-agent task list
+agentic-agent task claim <task-id>
+
+cd packages/service-a
+# ... implement + tests ...
+cd ../..
+
+agentic-agent task complete <task-id>
+```
+
+## Parallel Work Pattern
+
+The monorepo benefit is parallelism:
+
+1. Create one spec per package (or per change) near the code.
+2. Initialize OpenSpec changes for each package spec.
+3. Each team works inside its package, claiming tasks.
+4. Integrate at the end (contracts, rollout order, integration tests).
+
+For dependency/rollout sequencing, see:
+- [/workflow-diagrams](/workflow-diagrams) (dependency graph)
+- [/prompting-guide](/prompting-guide) (dependency analysis prompt)
+
+## CLI Reference (Common)
+
+| Command | Purpose |
+|---|---|
+| `openspec init <name> --from <file>` | create/update a change from a spec |
+| `openspec list` | list all changes |
+| `openspec show <id>` | show a change (includes original spec path) |
+| `openspec status <id>` | show progress |
+| `openspec complete <id>` | mark change done |
+| `openspec archive <id>` | archive change |
+| `task create` / `task claim` / `task complete` | task loop |
+
+## FAQ
+
+### Can I have root-level specs too?
+
+Yes. Include `specs/` in `specDirs` for shared/cross-package specs.
+
+### What if two packages have specs with the same name?
+
+The first match wins (based on `specDirs` ordering). Avoid collisions by namespacing or unique filenames.
+
+### Do I need one OpenSpec change per spec file?
+
+No. Create OpenSpec changes when you want lifecycle tracking. For tiny work, use tasks only.
+
+### What if requirements change during implementation?
+
+Update the spec file and regenerate/update tasks by re-running `openspec init`.
+
+## Next
+
+- Single package workflow: [/small-projects](/small-projects)
+- Commands: [/cli-cheatsheet](/cli-cheatsheet)
+- Prompt library: [/prompting-guide](/prompting-guide)

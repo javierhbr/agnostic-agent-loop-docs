@@ -8,6 +8,11 @@ const sidebars: SidebarsConfig = {
       label: '↗ Introduction',
     },
     {
+      type: 'doc',
+      id: 'field-guide',
+      label: '↗ Field Guide',
+    },
+    {
       type: 'category',
       label: 'Core Concepts',
       collapsed: false,
@@ -15,6 +20,7 @@ const sidebars: SidebarsConfig = {
         'big-idea',
         'tools',
         'structure',
+        'usage-levels',
       ],
     },
     {
@@ -26,6 +32,32 @@ const sidebars: SidebarsConfig = {
         'agents',
         'gates',
         'prompts',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'How-to Guides',
+      collapsed: false,
+      items: [
+        'small-projects',
+        'monorepo-openspec',
+        'prompting-guide',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Explanation',
+      collapsed: true,
+      items: [
+        'workflow-diagrams',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Reference',
+      collapsed: true,
+      items: [
+        'cli-cheatsheet',
       ],
     },
     {

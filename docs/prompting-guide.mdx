@@ -1,0 +1,337 @@
+---
+id: prompting-guide
+title: Prompting Guide
+description: Prompt templates for using AI agents with OpenSpec, Platform, and SDD Full workflows.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="13"
+  title="Prompting Guide"
+  desc="Use AI for spec generation and decision support. Use the CLI for lifecycle tracking and accountability."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  How-to (with reference prompts). This page provides a repeatable way to use prompts without losing traceability.
+</CalloutBox>
+
+## TL;DR: Prompt Patterns by Level
+
+| Level | Agent role | Prompt outcome | What you do next |
+|---|---|---|---|
+| OpenSpec | PM/Developer | `proposal.md` + `tasks.md` | `openspec init`, then work tasks |
+| Platform | Architect | platform spec + fan-out | align contracts, then teams OpenSpec |
+| SDD Full | Analyst | discovery interview + evidence | unblock Architect spec writing |
+| SDD Full | Architect | feature spec + component specs | run gates, resolve ADRs |
+| SDD Full | Developer | impl spec + `tasks.yaml` | implement in parallel per component |
+| SDD Full | Verifier | verification plan/report | block merge until evidence exists |
+
+## The Rule: Prompts Create Artifacts, CLI Tracks Them
+
+```text
+Prompt -> paste into file -> CLI tracks -> humans review -> implement -> verify -> complete
+```
+
+If you skip the "paste into file" step, you lose the audit trail and your team re-learns the same decisions later.
+
+## OpenSpec Prompts (Small Features)
+
+<details>
+  <summary>Prompt: Generate proposal.md + tasks.md</summary>
+
+```text
+You are a Product Manager helping decompose a feature into actionable tasks.
+
+FEATURE:
+[Paste your feature description here]
+
+Generate:
+1) proposal.md (1-2 paragraphs)
+   - Problem: what user problem does this solve?
+   - Why now: metric for success
+   - What: what are we building?
+   - Acceptance: 3-5 testable acceptance criteria (Given/When/Then if possible)
+
+2) tasks.md
+   - Group tasks (Backend, Frontend, Testing)
+   - List 5-10 actionable tasks
+   - For each task: acceptance criteria
+   - Include dependencies (Task 3 depends on Task 1)
+
+Output valid Markdown suitable to paste into proposal.md and tasks.md.
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Package-specific implementation</summary>
+
+```text
+I'm implementing [task] in packages/[service]/.
+
+Requirements from spec:
+[paste relevant spec content]
+
+Please:
+1) Design the solution
+2) Provide a minimal code sketch
+3) List files to create/modify
+4) Provide test structure and where tests live
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Testing strategy</summary>
+
+```text
+Write tests for [feature].
+
+Acceptance criteria:
+- [ ] [criterion 1]
+- [ ] [criterion 2]
+- [ ] [criterion 3]
+
+Provide:
+1) Unit test structure
+2) Integration test structure
+3) Mock strategy
+4) Test file locations
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Verification before completion</summary>
+
+```text
+Verify [feature] is complete.
+
+Checklist:
+- [ ] All acceptance criteria met?
+- [ ] Tests passing?
+- [ ] Code review ready?
+- [ ] Performance OK?
+- [ ] Security concerns addressed?
+- [ ] Docs updated?
+
+Show:
+1) Evidence per acceptance criterion (tests / logs / screenshots)
+2) A short "what changed" summary
+3) Any remaining risks or follow-ups
+```
+
+</details>
+
+### CLI glue (OpenSpec)
+
+```bash
+agentic-agent openspec init "Feature Name" --from requirements.md
+agentic-agent task claim <task-id>
+# ... implement ...
+agentic-agent task complete <task-id>
+agentic-agent openspec complete <change-id>
+agentic-agent openspec archive <change-id>
+```
+
+## Platform Prompts (Multi-Service Alignment)
+
+<details>
+  <summary>Prompt: Generate a 1-page platform spec</summary>
+
+```text
+You are a Platform Architect designing a multi-service feature.
+
+INITIATIVE:
+[Paste initiative description]
+
+SERVICES AFFECTED:
+[List services]
+
+TIMELINE:
+[e.g. 2 weeks]
+
+Generate platform-spec.md (max 1 page) with:
+1) Problem (2-3 sentences)
+2) Solution (2-3 sentences)
+3) Services: what changes per service
+4) Contracts: new/changed APIs or events
+5) Acceptance criteria: 5+ testable outcomes
+6) Blockers: decisions needed before implementation
+
+Output Markdown suitable to paste into platform-specs/<feature-id>/spec.md.
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Fan-out component specs (per service)</summary>
+
+```text
+For each service from the platform spec, generate a component spec.
+
+SERVICE:
+[service name]
+
+PLATFORM SPEC:
+[paste platform spec]
+
+Generate component-spec-[service].md with:
+1) API changes
+2) Data model changes
+3) Dependencies (what it calls / consumes)
+4) Acceptance criteria (3-5 per service)
+5) Edge cases (2-3) and handling
+
+Keep it brief (< 500 words) but specific.
+```
+
+</details>
+
+### CLI glue (Platform -> OpenSpec)
+
+```bash
+agentic-agent platform init
+agentic-agent platform add-feature --name "..." --initiative "..." --context-pack "..." --fanout "svc-a,svc-b"
+
+# Each team then:
+cd packages/svc-a
+agentic-agent openspec init "..." --from ../platform-specs/<feature-id>/spec.md
+```
+
+## SDD Full Prompts (Critical / High Risk)
+
+<details>
+  <summary>Prompt: Analyst interview guide (one question at a time)</summary>
+
+```text
+You are an SDD Analyst helping a team discover the problem space.
+
+INITIATIVE:
+[Feature name]
+
+TEAM CONTEXT:
+[who is involved, team size, on-call considerations]
+
+Generate an interview guide with 8-10 questions to ask ONE AT A TIME.
+For each question:
+1) The exact question
+2) What evidence you want
+3) Examples of good vs bad answers
+
+Focus on:
+- problem evidence (data, not assumptions)
+- affected components
+- risk factors
+- rollback concerns
+- observability needs
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Architect spec generator (feature spec + component specs)</summary>
+
+```text
+You are an SDD Architect designing from team discovery.
+
+DISCOVERY SUMMARY:
+[paste evidence and findings]
+
+Generate two deliverables:
+
+1) feature-spec.md (platform-level WHAT)
+   - Problem (from discovery)
+   - Goals / non-goals
+   - UX walkthrough
+   - Domain responsibilities
+   - Cross-domain interactions (event/contract flows)
+   - NFRs (performance, logging, metrics, tracing, PII)
+   - Acceptance criteria (7+; Given/When/Then)
+   - Feature flag + rollback strategy
+
+2) component-spec-[service].md (per service HOW)
+   - API contracts
+   - Data model (tables, fields, constraints)
+   - Acceptance criteria (3-5 per service)
+   - Edge cases (3-4)
+
+Make specs detailed enough to pass:
+Gate 1 context completeness, Gate 2 domain validity, Gate 3 integration safety,
+Gate 4 NFR compliance, Gate 5 ready to implement.
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Developer impl spec + tasks.yaml</summary>
+
+```text
+You are an SDD Developer reading a component spec.
+
+COMPONENT SPEC:
+[paste component-spec]
+
+Generate:
+1) impl-spec.md
+   - Data model (migrations / schema)
+   - Code changes (modules, functions, boundaries)
+   - Edge cases table (4+ scenarios and handling)
+   - Observability (logs/metrics/traces)
+   - Rollout plan (flags, canary, rollback)
+
+2) tasks.yaml
+   - 8-10 actionable tasks grouped by Backend/Frontend/Testing
+   - per task: change + acceptance criteria
+   - dependencies between tasks
+
+Each task should be completable in 1-3 days by one developer.
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Verifier evidence plan (verify.md)</summary>
+
+```text
+You are an SDD Verifier creating a verification plan and evidence checklist.
+
+FEATURE SPEC:
+[paste feature-spec with acceptance criteria]
+
+IMPLEMENTATION:
+[paste impl-spec]
+
+Generate verify.md with:
+1) For each acceptance criterion: test(s) + evidence required
+2) Code quality checklist: lint/build/coverage/perf targets
+3) Observability verification: expected logs/metrics/traces
+4) Blocking conditions: what prevents merge/release
+
+Format as Markdown.
+```
+
+</details>
+
+## Best Practices
+
+### Do
+
+- Put outputs in versioned files; treat prompts as scaffolding, not truth.
+- Ask for acceptance criteria to be testable and evidence-friendly.
+- Keep prompts scoped to a single package/service when implementing.
+- Use the dependency-analysis prompt before cross-service rollout.
+
+### Don't
+
+- Ask the model to implement without providing the spec or constraints.
+- Let prompt output live only in chat; you will lose the decision trail.
+- Over-prompt small bugs; use tasks-only workflow for speed.
+
+## See Also
+
+- Workflow selection: [/usage-levels](/usage-levels)
+- Commands: [/cli-cheatsheet](/cli-cheatsheet)
+- Monorepo setup: [/monorepo-openspec](/monorepo-openspec)
+- Visual flows: [/workflow-diagrams](/workflow-diagrams)

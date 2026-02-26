@@ -1,0 +1,120 @@
+---
+id: field-guide
+title: Field Guide
+description: Navigate OpenSpec + SDD docs by scenario, role, and question.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="07"
+  title="Field Guide"
+  desc="A map for finding the right workflow, guide, and prompt quickly."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  Reference. Use this page to find the right document. If you already know what you need, jump straight to the relevant guide.
+</CalloutBox>
+
+## Start With Your Scenario
+
+### I found a bug (minutes to hours)
+
+```bash
+agentic-agent task create "Fix: <short description>"
+agentic-agent task claim <task-id>
+# ... code + tests ...
+agentic-agent task complete <task-id>
+```
+
+Next: [/cli-cheatsheet](/cli-cheatsheet) (commands + gotchas), [/small-projects](/small-projects) (tiny workflow).
+
+### I'm building a feature (1-2 weeks, single package)
+
+```bash
+# 1) write a short requirements.md (problem + acceptance criteria)
+agentic-agent openspec init "Feature Name" --from requirements.md
+
+# 2) work task-by-task
+agentic-agent task claim <task-id>
+# ... code + tests ...
+agentic-agent task complete <task-id>
+
+# 3) finish
+agentic-agent openspec complete <change-id>
+agentic-agent openspec archive <change-id>
+```
+
+Next: [/small-projects](/small-projects) (how-to + templates), [/cli-cheatsheet](/cli-cheatsheet) (one-page reference).
+
+### I'm in a monorepo (multiple packages, parallel teams)
+
+```bash
+# root config enables multi-path spec discovery
+# specs live near code (packages/*/specs)
+agentic-agent openspec init "Feature Name" --from packages/<pkg>/specs/<spec>.md
+```
+
+Next: [/monorepo-openspec](/monorepo-openspec) (how-to), [/workflow-diagrams](/workflow-diagrams) (how discovery works).
+
+### This is high-risk (payments/auth/PII/regulatory)
+
+```bash
+agentic-agent sdd start "Initiative Name" --risk critical
+agentic-agent sdd workflow show <initiative-id>
+agentic-agent sdd gate-check <spec-id>
+```
+
+Next: [/usage-levels](/usage-levels) (when to use which level), [/workflow-diagrams](/workflow-diagrams) (gate flow).
+
+## By Document Type (Diataxis)
+
+| Type | Use it when | Go to |
+|---|---|---|
+| **How-to** | You want step-by-step instructions for a real task | [/small-projects](/small-projects), [/monorepo-openspec](/monorepo-openspec), [/prompting-guide](/prompting-guide) |
+| **Explanation** | You want to understand concepts and trade-offs | [/usage-levels](/usage-levels), [/workflow-diagrams](/workflow-diagrams) |
+| **Reference** | You want commands, templates, and quick lookup | [/cli-cheatsheet](/cli-cheatsheet) |
+
+## By Question
+
+| Question | Where to look |
+|---|---|
+| Which workflow should I use? | [/usage-levels](/usage-levels), [/workflow-diagrams](/workflow-diagrams) |
+| What are the core CLI commands? | [/cli-cheatsheet](/cli-cheatsheet) |
+| How do I structure specs in a single repo? | [/small-projects](/small-projects) |
+| How do I set up monorepo spec discovery? | [/monorepo-openspec](/monorepo-openspec), [/workflow-diagrams](/workflow-diagrams) |
+| What prompts should I use with an AI agent? | [/prompting-guide](/prompting-guide) |
+| How long will this take? | [/workflow-diagrams](/workflow-diagrams) (time estimates) |
+
+## By Role
+
+### Product / PM
+
+1. [/usage-levels](/usage-levels)
+2. [/workflow-diagrams](/workflow-diagrams)
+3. [/prompting-guide](/prompting-guide) (generate specs and tasks)
+
+### Developer (single package)
+
+1. [/cli-cheatsheet](/cli-cheatsheet)
+2. [/small-projects](/small-projects)
+3. [/prompting-guide](/prompting-guide) (task implementation + testing prompts)
+
+### Developer (monorepo)
+
+1. [/monorepo-openspec](/monorepo-openspec)
+2. [/workflow-diagrams](/workflow-diagrams) (multi-path discovery + dependencies)
+3. [/cli-cheatsheet](/cli-cheatsheet)
+
+### Tech lead / architect
+
+1. [/usage-levels](/usage-levels) (level selection)
+2. [/monorepo-openspec](/monorepo-openspec) (coordination patterns)
+3. [/workflow-diagrams](/workflow-diagrams) (dependency graph + rollout)
+
+## Next Step
+
+Pick one page:
+- New to this system: [/usage-levels](/usage-levels)
+- Need commands now: [/cli-cheatsheet](/cli-cheatsheet)
+- Need step-by-step: [/small-projects](/small-projects) or [/monorepo-openspec](/monorepo-openspec)
