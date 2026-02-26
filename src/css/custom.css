@@ -44,6 +44,9 @@
 
   /* Typography */
   --tom-mono:        'Space Mono', monospace;
+  /* VS Code-like editor monospace stack (good box-drawing support + consistent metrics) */
+  --tom-code-mono:   SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+                     "DejaVu Sans Mono", "Droid Sans Mono", "Courier New", monospace;
   --tom-display:     'Syne', sans-serif;
   --tom-body:        'DM Sans', sans-serif;
 
@@ -59,7 +62,7 @@
   --ifm-background-color:         var(--tom-bg);
   --ifm-background-surface-color: var(--tom-surface);
   --ifm-font-family-base:         var(--tom-body);
-  --ifm-font-family-monospace:    var(--tom-mono);
+  --ifm-font-family-monospace:    var(--tom-code-mono);
   --ifm-font-size-base:           15px;
   --ifm-line-height-base:         1.65;
   --ifm-heading-font-family:      var(--tom-display);
@@ -243,7 +246,7 @@ body::before {
 }
 
 .table-of-contents__link {
-  color: var(--tom-ink-faint);
+  color: var(--tom-ink3);
   font-size: 11px;
   letter-spacing: .04em;
   transition: color .15s;
@@ -252,6 +255,32 @@ body::before {
 .table-of-contents__link:hover,
 .table-of-contents__link--active {
   color: var(--tom-rust) !important;
+}
+
+/* Desktop TOC: keep its left edge where it is, but let it bleed to the browser edge */
+@media (min-width: 997px) {
+  .docs-doc-page {
+    /* Keep this in sync with `.docs-doc-page .container { max-width: ... }` */
+    --tom-docs-container-width: 1180px;
+    /* Centered container leaves unused space on each side: (vw - container)/2 */
+    --tom-docs-container-gap: max(
+      0px,
+      calc((100vw - var(--tom-docs-container-width)) / 2)
+    );
+    /* Also account for the TOC column right padding (Infima `.col`) */
+    --tom-docs-toc-right-bleed: calc(
+      var(--tom-docs-container-gap) + var(--ifm-spacing-horizontal)
+    );
+  }
+
+  .docs-doc-page .theme-doc-toc-desktop {
+    width: calc(100% + var(--tom-docs-toc-right-bleed));
+    margin-right: calc(-1 * var(--tom-docs-toc-right-bleed));
+  }
+
+  .docs-doc-page .theme-doc-toc-desktop .table-of-contents li {
+    margin-right: 0;
+  }
 }
 
 /* ── MAIN CONTENT AREA ───────────────────────────────────── */
@@ -335,7 +364,9 @@ a:hover {
 
 /* ── CODE ───────────────────────────────────────────────── */
 code {
-  font-family: var(--tom-mono) !important;
+  font-family: var(--tom-code-mono) !important;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   font-size: 12.5px !important;
   background: rgba(26,28,46,0.05) !important;
   border: 1px solid var(--tom-border) !important;
@@ -354,7 +385,9 @@ code {
 }
 
 .prism-code {
-  font-family: var(--tom-mono) !important;
+  font-family: var(--tom-code-mono) !important;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   font-size: 12.5px !important;
   background: var(--tom-surface) !important;
   border: 1px solid var(--tom-border) !important;

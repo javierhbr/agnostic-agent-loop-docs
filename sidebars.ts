@@ -17,10 +17,10 @@ const sidebars: SidebarsConfig = {
       label: 'Core Concepts',
       collapsed: false,
       items: [
-        'big-idea',
-        'tools',
-        'structure',
-        'usage-levels',
+        'core-concepts/big-idea',
+        'core-concepts/tools',
+        'core-concepts/structure',
+        'core-concepts/usage-levels',
       ],
     },
     {
@@ -28,10 +28,10 @@ const sidebars: SidebarsConfig = {
       label: 'Process',
       collapsed: false,
       items: [
-        'lifecycle',
-        'agents',
-        'gates',
-        'prompts',
+        'process/lifecycle',
+        'process/agents',
+        'process/gates',
+        'process/prompts',
       ],
     },
     {
@@ -39,9 +39,9 @@ const sidebars: SidebarsConfig = {
       label: 'How-to Guides',
       collapsed: false,
       items: [
-        'small-projects',
-        'monorepo-openspec',
-        'prompting-guide',
+        'how-to-guides/small-projects',
+        'how-to-guides/monorepo-openspec',
+        'how-to-guides/prompting-guide',
       ],
     },
     {
@@ -49,7 +49,7 @@ const sidebars: SidebarsConfig = {
       label: 'Explanation',
       collapsed: true,
       items: [
-        'workflow-diagrams',
+        'explanation/workflow-diagrams',
       ],
     },
     {
@@ -57,7 +57,7 @@ const sidebars: SidebarsConfig = {
       label: 'Reference',
       collapsed: true,
       items: [
-        'cli-cheatsheet',
+        'reference/cli-cheatsheet',
       ],
     },
     {
@@ -65,8 +65,8 @@ const sidebars: SidebarsConfig = {
       label: 'Operations',
       collapsed: false,
       items: [
-        'roles',
-        'scaling',
+        'operations/roles',
+        'operations/scaling',
       ],
     },
   ],

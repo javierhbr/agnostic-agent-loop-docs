@@ -1,6 +1,7 @@
 ---
 id: lifecycle
 title: Development Lifecycle
+slug: /lifecycle
 description: Every initiative follows one governed flow, selected by risk level.
 ---
 
@@ -25,55 +26,55 @@ import { SectionHeader, FlowStep, CalloutBox } from '@site/src/components/tom';
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
-│                    OPENSPEC LIFECYCLE                             │
+│                    OPENSPEC LIFECYCLE                            │
 └──────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. PLAN PHASE (Day 1)                                           │
-│                                                                 │
-│   Write spec file (requirements.md)                             │
-│   ↓                                                             │
-│   agentic-agent openspec init "Name" --from requirements.md     │
-│   ↓                                                             │
-│   Creates:                                                      │
-│   • .agentic/openspec/changes/<feature>/proposal.md            │
-│   • .agentic/openspec/changes/<feature>/tasks.md               │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ 1. PLAN PHASE (Day 1)                                            │
+│                                                                  │
+│   Write spec file (requirements.md)                              │
+│   ↓                                                              │
+│   agentic-agent openspec init "Name" --from requirements.md      │
+│   ↓                                                              │
+│   Creates:                                                       │
+│   • .agentic/openspec/changes/<feature>/proposal.md              │
+│   • .agentic/openspec/changes/<feature>/tasks.md                 │
+└──────────────────────────────────────────────────────────────────┘
                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. BUILD PHASE (Days 2-N)                                       │
-│                                                                 │
-│   ┌────────────────────────────────────────────────────────┐   │
-│   │ For each task:                                         │   │
-│   │                                                        │   │
-│   │   agentic-agent task claim <task-id>                  │   │
-│   │   ↓                                                    │   │
-│   │   [Implement in your package]                         │   │
-│   │   ├─ Edit code files                                  │   │
-│   │   ├─ Add tests                                        │   │
-│   │   └─ Commit changes                                   │   │
-│   │   ↓                                                    │   │
-│   │   agentic-agent task complete <task-id>              │   │
-│   │   ↓                                                    │   │
-│   │   Task marked done, move to next                      │   │
-│   └────────────────────────────────────────────────────────┘   │
-│   ↓                                                             │
-│   Repeat until all tasks completed                              │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ 2. BUILD PHASE (Days 2-N)                                        │
+│                                                                  │
+│   ┌────────────────────────────────────────────────────────┐     │
+│   │ For each task:                                         │     │
+│   │                                                        │     │
+│   │   agentic-agent task claim <task-id>                   │     │
+│   │   ↓                                                    │     │
+│   │   [Implement in your package]                          │     │
+│   │   ├─ Edit code files                                   │     │
+│   │   ├─ Add tests                                         │     │
+│   │   └─ Commit changes                                    │     │
+│   │   ↓                                                    │     │
+│   │   agentic-agent task complete <task-id>                │     │
+│   │   ↓                                                    │     │
+│   │   Task marked done, move to next                       │     │
+│   └────────────────────────────────────────────────────────┘     │
+│   ↓                                                              │
+│   Repeat until all tasks completed                               │
+└──────────────────────────────────────────────────────────────────┘
                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. VERIFY PHASE (Final Day)                                     │
-│                                                                 │
-│   agentic-agent openspec status <feature-id>                   │
-│   ↓                                                             │
-│   Check all acceptance criteria ✓                              │
-│   Run tests one final time ✓                                   │
-│   Code review complete ✓                                       │
-│   ↓                                                             │
-│   agentic-agent openspec complete <feature-id>                 │
-│   ↓                                                             │
-│   agentic-agent openspec archive <feature-id>                  │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ 3. VERIFY PHASE (Final Day)                                      │
+│                                                                  │
+│   agentic-agent openspec status <feature-id>                     │
+│   ↓                                                              │
+│   Check all acceptance criteria ✓                                │
+│   Run tests one final time ✓                                     │
+│   Code review complete ✓                                         │
+│   ↓                                                              │
+│   agentic-agent openspec complete <feature-id>                   │
+│   ↓                                                              │
+│   agentic-agent openspec archive <feature-id>                    │
+└──────────────────────────────────────────────────────────────────┘
                             ↓
                     ✅ FEATURE DONE
 ```
