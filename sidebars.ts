@@ -57,6 +57,23 @@ const sidebars: SidebarsConfig = {
           collapsed: false,
           items: [
             'agentic-agent-cli/idea-refine',
+            'agentic-agent-cli/examples-sdd-ecommerce',
+            {
+              type: 'category',
+              label: 'SDD E-commerce (Full)',
+              collapsed: true,
+              items: [
+                'agentic-agent-cli/examples-sdd/examples-sdd-summary',
+                'agentic-agent-cli/examples-sdd/examples-sdd-setup',
+                'agentic-agent-cli/examples-sdd/examples-sdd-initiative',
+                'agentic-agent-cli/examples-sdd/examples-sdd-risk',
+                'agentic-agent-cli/examples-sdd/examples-sdd-analyst',
+                'agentic-agent-cli/examples-sdd/examples-sdd-architect',
+                'agentic-agent-cli/examples-sdd/examples-sdd-developer',
+                'agentic-agent-cli/examples-sdd/examples-sdd-verifier',
+                'agentic-agent-cli/examples-sdd/examples-sdd-gate-checks',
+              ],
+            },
           ],
         },
         'agentic-agent-cli/installation',

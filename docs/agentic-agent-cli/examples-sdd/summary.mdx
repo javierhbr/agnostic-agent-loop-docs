@@ -1,0 +1,1152 @@
+---
+id: examples-sdd-summary
+title:  Summary & Guide
+slug: /agentic-agent-cli/examples/sdd/summary
+description: Overview of the Subscription Billing SDD Full example; links to each phase and artifacts.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="15x"
+  title=" Summary & Guide"
+  desc="Overview of the Subscription Billing SDD Full example; links to each phase and artifacts."
+/>
+
+<CalloutBox type="teal" label="Source">
+  Files from tmp/sdd-ecommerce-payments
+</CalloutBox>
+
+### 00-EXAMPLE-SUMMARY.md
+
+<details>
+  <summary>00-EXAMPLE-SUMMARY.md</summary>
+
+````markdown
+# SDD Example Summary
+
+This directory contains a **complete, production-grade worked example** of Spec-Driven Development (SDD v3.0) from problem statement through verification.
+
+## What's Included
+
+### 📋 18 Files Organized in 8 Phases
+
+```
+Phase 0: Setup
+  └─ 00-setup/agnostic-agent.yaml ...................... Project config
+
+Phase 1: Initiative Definition
+  └─ 01-initiative/initiative.md ........................ PM defines problem & goals
+
+Phase 2: Risk Assessment
+  └─ 02-risk-assessment/risk-classification.md ......... Determines workflow (Full)
+
+Phase 3: Analyst Discovery
+  ├─ 03-analyst/prompts.md .............................. Example prompts to invoke analyst
+  └─ 03-analyst/discovery.md ............................ Analyst's findings (evidence-based)
+
+Phase 4: Architecture
+  ├─ 04-architect/prompts.md ............................ Example prompts to invoke architect
+  ├─ 04-architect/feature-spec.md ....................... Platform-level WHAT (7 ACs)
+  ├─ 04-architect/component-spec-billing.md ........... Billing Service HOW
+  ├─ 04-architect/component-spec-payments.md ......... Payments Service HOW
+  └─ 04-architect/ADR-001-card-vault.md ............... Blocking decision (resolved)
+
+Phase 5: Development
+  ├─ 05-developer/prompts.md ............................ Example prompts to invoke developers
+  ├─ 05-developer/impl-spec-billing.md ................ Implementation detail
+  └─ 05-developer/tasks.yaml ............................ Task decomposition (10 tasks)
+
+Phase 6: Gate Checks
+  └─ 07-gate-checks/gate-check-output.md .............. Gate 1-5 validation (pass/fail examples)
+
+Phase 7: Verification
+  ├─ 06-verifier/prompts.md ............................ Example prompts to invoke verifier
+  └─ 06-verifier/verify.md ............................. Test evidence & sign-off
+
+Guides
+  ├─ README.md ......................................... Human-readable walkthrough
+  ├─ AGENT-GUIDE.md .................................... Role-based instructions for AI agents
+  └─ 00-EXAMPLE-SUMMARY.md ............................. This file
+```
+
+## Key Numbers
+
+- **8 phases** from problem to verified
+- **18 files** showing every artifact
+- **7 acceptance criteria** with Given/When/Then format
+- **5 gates** enforced at each handoff
+- **4 services** affected + 1 new service
+- **10 development tasks** decomposed from impl-spec
+- **127 tests** (100% passing, 87% coverage)
+- **3-4 weeks** total timeline (critical risk feature)
+
+## What You Learn
+
+### For Humans (PMs, Architects, Engineers)
+
+1. **How to structure a complex feature**
+   - Problem statement with evidence
+   - Risk assessment
+   - Architectural specs with contracts
+
+2. **How to write specs that developers can implement**
+   - Acceptance criteria in Given/When/Then
+   - Edge cases (4+)
+   - Observability specs (logging, metrics, tracing)
+
+3. **How to gate-check your specs**
+   - 5 gates with specific criteria
+   - Common failures and fixes
+
+4. **How to verify with evidence**
+   - Every AC mapped to test
+   - Code quality checks
+   - Blocking conditions (human approval)
+
+5. **How to handle critical decisions**
+   - ADRs (Architecture Decision Records)
+   - Blocking implementation until resolved
+   - Unblocking everything at once
+
+### For AI Agents (Automating Each Role)
+
+1. **Analyst:** Interview team, extract evidence, classify risk
+2. **Architect:** Design from evidence, create component specs, identify blocking ADRs
+3. **Developer:** Read specs, implement, decompose into tasks
+4. **Verifier:** Check every AC with observable evidence, block if unverified
+
+Read [AGENT-GUIDE.md](./AGENT-GUIDE.md) for role-based instructions.
+
+## How to Use This Example
+
+### Option 1: Study the Flow (1-2 hours)
+
+1. Read [README.md](./README.md) (15 min)
+2. Read [01-initiative/initiative.md](./01-initiative/initiative.md) (10 min)
+3. Read [04-architect/feature-spec.md](./04-architect/feature-spec.md) (30 min)
+4. Read [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) (30 min)
+5. Read [06-verifier/verify.md](./06-verifier/verify.md) (15 min)
+
+**Result:** Understanding of the complete SDD workflow
+
+### Option 2: Use as Templates (ongoing)
+
+Copy files and adapt to your feature:
+- [04-architect/feature-spec.md](./04-architect/feature-spec.md) → your feature-spec
+- [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) → your component-specs
+- [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) → your impl-specs
+- [06-verifier/verify.md](./06-verifier/verify.md) → your verify.md
+
+### Option 3: Execute in Your Project (ongoing)
+
+```bash
+# 1. Copy this directory
+cp -r examples/sdd-ecommerce-payments/ my-project/example-subscription-feature
+
+# 2. Update files with your feature details
+# 3. Follow README.md step-by-step
+# 4. Run each agent phase
+```
+
+## What Makes This Example Special
+
+✅ **Complete:** Every phase shown, not just happy path
+✅ **Realistic:** Real complexity (5-service feature, payment system, PII)
+✅ **Detailed:** Every step has 2000-4000 word documents
+✅ **Actionable:** Copy prompts, run commands, adapt artifacts
+✅ **Dual-Purpose:** Works for humans AND AI agents
+✅ **Verifiable:** All gates documented, gate failures shown with fixes
+✅ **Risk-Based:** Critical payment feature requires most rigor
+
+## Core SDD Principles Demonstrated
+
+| Principle | Where Shown | File |
+|-----------|------------|------|
+| Spec before code | Phase 1-4 before Phase 5 | All specs completed before impl-spec |
+| Risk determines weight | Phase 2 | risk-classification.md (critical → Full workflow) |
+| Gates are checklists | All phases | gate-check-output.md (all 5 gates) |
+| Evidence, not assertions | Phase 3 & 7 | discovery.md (evidence), verify.md (test evidence) |
+| ADRs block implementation | Phase 4-5 | ADR-001-card-vault.md (blocks development) |
+| Specs never deleted | Implicit | Specs stay in git history (PAUSED → APPROVED → DONE) |
+| Parallel fan-out | Phase 5-6 | Multiple developers simultaneously (per component) |
+| Knowledge compounds | End | Patterns → Component MCP for Phase 2 |
+
+## Timeline Breakdown
+
+| Phase | Duration | Outputs | Status |
+|-------|----------|---------|--------|
+| 0. Setup | 1 day | Project config | ✓ Done |
+| 1. Initiative | 1-2 days | Problem statement | ✓ Done |
+| 2. Risk Assessment | 1 day | Workflow = Full | ✓ Done |
+| 3. Analyst | 3-5 days | discovery.md | ✓ Done |
+| 4. Architect | 5-7 days | feature-spec + component-specs + ADRs | ✓ Done (ADR blocks) |
+| 5a. ADR Resolution | 3-5 days | ADR APPROVED (Stripe chosen) | ✓ Done |
+| 5b. Developer | 8-10 days | impl-specs + tasks (5 parallel) | ✓ Done |
+| 6. Gate Checks | 1 day | All gates PASS | ✓ Done |
+| 7. Verification | 2-3 days | All ACs verified | ✓ Done (human approval pending) |
+| 8. Completion | 1 day | Spec marked Done, knowledge updated | ✓ Ready |
+
+**Total: 3-4 weeks** (critical payment feature, parallel dev)
+
+## Reading Sequences
+
+### For PM
+1. [README.md](./README.md) (intro)
+2. [01-initiative/initiative.md](./01-initiative/initiative.md) (your job)
+3. [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md) (why Full?)
+4. [04-architect/feature-spec.md](./04-architect/feature-spec.md) (outcome)
+
+### For Architect
+1. [README.md](./README.md)
+2. [03-analyst/discovery.md](./03-analyst/discovery.md) (inputs)
+3. [04-architect/feature-spec.md](./04-architect/feature-spec.md) (your spec)
+4. [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) (template)
+5. [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) (blocking decisions)
+6. [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md) (validation)
+
+### For Developer
+1. [AGENT-GUIDE.md](./AGENT-GUIDE.md) (role instructions)
+2. [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) (your spec)
+3. [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) (your impl-spec)
+4. [05-developer/tasks.yaml](./05-developer/tasks.yaml) (your tasks)
+
+### For Verifier
+1. [AGENT-GUIDE.md](./AGENT-GUIDE.md)
+2. [04-architect/feature-spec.md](./04-architect/feature-spec.md) (all ACs)
+3. [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) (code structure)
+4. [06-verifier/verify.md](./06-verifier/verify.md) (verification template)
+
+### For AI Agent (Any Role)
+1. [AGENT-GUIDE.md](./AGENT-GUIDE.md) — Start here for your role
+2. [prompts.md](./03-analyst/prompts.md) — See example invocation
+3. Corresponding artifact files — Understand inputs/outputs
+
+## Quick Start Commands
+
+```bash
+# Setup
+cd examples/sdd-ecommerce-payments
+agentic-agent sdd agents install
+
+# View project config
+cat 00-setup/agnostic-agent.yaml
+
+# Start the initiative
+agentic-agent sdd start "Subscription Billing" --risk critical
+
+# Check a gate
+agentic-agent sdd gate-check SBL-2025-Q1 --format text
+
+# Read the narrative
+cat README.md
+```
+
+## Files at a Glance
+
+| File | Size | Words | Purpose |
+|------|------|-------|---------|
+| [README.md](./README.md) | 8 KB | 4000 | Main walkthrough |
+| [AGENT-GUIDE.md](./AGENT-GUIDE.md) | 6 KB | 2500 | Role-based instructions |
+| [01-initiative/initiative.md](./01-initiative/initiative.md) | 2 KB | 800 | Problem statement |
+| [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md) | 5 KB | 2000 | Risk analysis |
+| [03-analyst/discovery.md](./03-analyst/discovery.md) | 6 KB | 2500 | Evidence & findings |
+| [04-architect/feature-spec.md](./04-architect/feature-spec.md) | 12 KB | 5000 | Platform-level WHAT |
+| [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) | 5 KB | 2000 | Billing service design |
+| [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) | 4 KB | 1500 | Blocking decision |
+| [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) | 9 KB | 3500 | Implementation detail |
+| [05-developer/tasks.yaml](./05-developer/tasks.yaml) | 8 KB | 2000 | Task decomposition |
+| [06-verifier/verify.md](./06-verifier/verify.md) | 8 KB | 3000 | Test evidence |
+| [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md) | 5 KB | 2000 | Gate validation |
+
+**Total: ~85 KB, ~35,000 words**
+
+## What to Copy for Your Feature
+
+Create your own SDD example:
+
+```bash
+# Copy the directory structure
+cp -r examples/sdd-ecommerce-payments/ my-project/example-my-feature
+
+# Update key files
+vim my-project/example-my-feature/01-initiative/initiative.md
+vim my-project/example-my-feature/04-architect/feature-spec.md
+vim my-project/example-my-feature/05-developer/impl-spec-[service].md
+
+# Follow the prompts in each prompts.md file
+```
+
+## Questions?
+
+- **What is SDD?** → Read [../../docs/sdd-mcp/operation%20model/TARGET-OPERATING-MODEL.md](../../docs/sdd-mcp/operation%20model/TARGET-OPERATING-MODEL.md)
+- **How do I become an Analyst?** → Read [AGENT-GUIDE.md](./AGENT-GUIDE.md#analyst-agent)
+- **How do I write acceptance criteria?** → See [04-architect/feature-spec.md](./04-architect/feature-spec.md#acceptance-criteria)
+- **What's an ADR?** → See [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md)
+- **How do gates work?** → See [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md)
+
+---
+
+## Summary
+
+This example proves SDD works for complex, high-risk features:
+- ✅ Multidisciplinary team (PM, Architects, Developers, Security)
+- ✅ High-risk (payment system + PII)
+- ✅ Multiservice (5 services affected)
+- ✅ Evidence-based (every decision backed by data)
+- ✅ Verifiable (every AC tested)
+- ✅ Reusable (templates for your features)
+
+**Start here. Build better features.**
+
+---
+
+**Created with SDD v3.0**
+**Scenario: ShopFlow Subscription Billing (Critical Risk → Full Workflow)**
+**Timeline: 3-4 weeks**
+**Status: Verified & Ready for Production**
+
+````
+
+</details>
+
+### AGENT-GUIDE.md
+
+<details>
+  <summary>AGENT-GUIDE.md</summary>
+
+````markdown
+# SDD Agent Guide: Role-Based Instructions
+
+For AI agents operating autonomously, this guide provides concise step-by-step instructions per agent role.
+
+---
+
+## Analyst Agent
+
+**Trigger:** Initiative defined, Risk Level = CRITICAL or HIGH
+
+**Files to Read:**
+- [01-initiative/initiative.md](./01-initiative/initiative.md)
+- [03-analyst/prompts.md](./03-analyst/prompts.md) (example prompt structure)
+
+**Your Job:**
+1. Read initiative.md thoroughly
+2. Call Platform MCP: `get_context_pack(initiative_name)`
+3. Interview the team ONE QUESTION AT A TIME:
+   - Problem evidence? (real data, not opinion)
+   - Affected services? (names)
+   - Blocking ADRs? (what decisions needed?)
+   - Rollback concern? (how to undo?)
+   - Observability? (what metrics matter?)
+4. Produce `discovery.md` with:
+   - Problem statement (metric + evidence)
+   - Evidence (data points, not assumptions)
+   - Affected components (explicit list)
+   - Risk classification (with rationale)
+   - Blocking ADRs identified
+   - Recommended workflow (Quick/Standard/Full)
+
+**Exit Gate (Self-Check):**
+- [ ] Problem statement has concrete metric
+- [ ] Evidence is real data
+- [ ] Affected components named
+- [ ] Risk classified with rationale
+- [ ] Blocking ADRs identified
+- [ ] Workflow matches risk level
+
+**Output:**
+- `03-analyst/discovery.md` (2000-3000 words)
+
+**Time:** 3-5 days
+
+**Next Agent:** Architect
+
+---
+
+## Architect Agent
+
+**Trigger:** Discovery.md complete, Risk Level = STANDARD or FULL
+
+**Files to Read:**
+- [03-analyst/discovery.md](./03-analyst/discovery.md)
+- [04-architect/prompts.md](./04-architect/prompts.md) (example prompt structure)
+
+**Your Job:**
+1. Read discovery.md thoroughly
+2. Call Platform MCP: `get_context_pack(risk_level)`
+3. For each affected service, call Component MCP:
+   - `get_contracts()` — APIs, events, schemas
+   - `get_invariants()` — business rules
+   - `get_decisions()` — prior ADRs
+4. Produce `feature-spec.md` (platform-level WHAT):
+   - Metadata (implements, context_pack, blocked_by, status)
+   - Problem statement (with Source:)
+   - Goals / Non-Goals
+   - User experience
+   - Domain responsibilities
+   - Cross-domain interactions
+   - NFRs (performance, logging, metrics, tracing, PII)
+   - Feature flag & rollback strategy
+   - Acceptance criteria (5+ in Given/When/Then)
+   - Blocking decisions (ADRs)
+5. Produce `component-spec-<service>.md` (per-service HOW):
+   - One per affected service
+   - API contracts with examples
+   - Data model
+   - Acceptance criteria (testable)
+   - Edge cases
+6. Produce `ADR-###.md` for blocking decisions
+   - Options with pros/cons
+   - Recommendation
+   - Decision timeline
+7. Self-check all 5 gates (see gate-check skill)
+
+**Gate Check (Self-Check):**
+- [ ] Gate 1: Context Completeness (every section has Source:)
+- [ ] Gate 2: Domain Validity (no cross-domain DB access)
+- [ ] Gate 3: Integration Safety (contracts listed, consumers identified)
+- [ ] Gate 4: NFR Compliance (logging, metrics, tracing, PII, performance)
+- [ ] Gate 5: Ready to Implement (no blocking ADRs, ACs testable)
+
+**Output:**
+- `04-architect/feature-spec.md`
+- `04-architect/component-spec-<service>.md` (multiple)
+- `04-architect/ADR-###.md` (blocking decisions)
+
+**Time:** 5-7 days
+
+**Next Steps:**
+1. ADR resolution (CTO, Security)
+2. Developer agents (parallel per component)
+
+---
+
+## ADR Reviewer
+
+**Trigger:** ADR created by Architect
+
+**Files to Read:**
+- `04-architect/ADR-###.md`
+
+**Your Job:**
+1. Review ADR options and recommendation
+2. Gather team (CTO, Security, Finance, etc. as needed)
+3. Make decision: Option A / B / C
+4. Update ADR:
+   - Status: APPROVED
+   - Decision: [selected option]
+   - Decision Date: [today]
+5. Unblock all specs: Set `blocked_by: []`
+6. Notify developers ADR is resolved
+
+**Output:**
+- ADR marked APPROVED
+- All component-specs with this ADR unblocked
+
+**Time:** 3-5 days
+
+**Next Agent:** Developer
+
+---
+
+## Developer Agent
+
+**Trigger:** Component-spec ready, `blocked_by: []` (no blocking ADRs)
+
+**Files to Read:**
+- [05-developer/prompts.md](./05-developer/prompts.md) (example structure)
+- `04-architect/component-spec-<service>.md` (your assigned component)
+- `04-architect/feature-spec.md` (overall context)
+
+**Your Job:**
+1. Read component-spec thoroughly
+2. Check `blocked_by` field — STOP if non-empty, wait for ADR
+3. Call Component MCP:
+   - `get_patterns()` — canonical implementation patterns
+   - `get_decisions()` — prior ADRs, lessons learned
+4. Produce `impl-spec-<service>.md`:
+   - Data model (database schema with constraints)
+   - Code changes (exact functions/modules to create/modify)
+   - Edge cases (table with 4+ scenarios and handling)
+   - Observability (logging, metrics, tracing, alerts in code)
+   - Rollout plan (feature flag, canary, rollback procedure)
+5. Produce `tasks.yaml`:
+   - 8-10 actionable development tasks
+   - Dependencies between tasks
+   - Effort estimates (hours/days)
+   - Acceptance criteria per task
+6. Self-check all 5 gates
+
+**Gate Check (Self-Check):**
+- [ ] Gate 1: Context Completeness
+- [ ] Gate 2: Domain Validity
+- [ ] Gate 3: Integration Safety
+- [ ] Gate 4: NFR Compliance
+- [ ] Gate 5: Ready to Implement
+
+**Output:**
+- `05-developer/impl-spec-<service>.md` (2000-3000 words)
+- `05-developer/tasks.yaml` (8-10 tasks)
+
+**Time:** 3-4 days per component
+
+**Parallelization:** Multiple developers can work simultaneously (one per component)
+
+**Next Agent:** Verifier (after code is written + tested)
+
+---
+
+## Verifier Agent
+
+**Trigger:** Code merged, all tests passing
+
+**Files to Read:**
+- [06-verifier/prompts.md](./06-verifier/prompts.md)
+- `04-architect/feature-spec.md` (all ACs listed)
+- `04-architect/component-spec-<service>.md` (all ACs)
+- `05-developer/impl-spec-<service>.md` (code structure)
+- Test results, logs, metrics (from CI/CD)
+
+**Your Job:**
+1. For every acceptance criterion, gather evidence:
+   - Test that proves it (test name + line + output)
+   - Log showing feature works
+   - Metric/trace showing behavior
+2. Check code quality:
+   - Tests: # passing, # failing
+   - Coverage: % (must be > 80%)
+   - Lint: # errors, # warnings (must be 0 errors)
+   - Build: success/failure
+3. Check blocking conditions:
+   - Any AC untestable? → BLOCK
+   - Any test FAILED? → BLOCK
+   - Coverage < 80%? → BLOCK
+   - Payment/PII touched without human approval? → BLOCK
+4. Produce `verify.md`:
+   - Metadata (spec ID, verified by, date, status)
+   - AC verification (AC1-AC7 with evidence)
+   - Code quality checks (tests, lint, coverage, build)
+   - Observability verification (logging, metrics, tracing, alerts)
+   - Blocking conditions (human approval required)
+   - Sign-off (ready for production?)
+
+**Blocking Conditions (Don't Merge If):**
+- [ ] Any AC is UNTESTABLE
+- [ ] Any test FAILS
+- [ ] Lint or build FAILS
+- [ ] Coverage < 80%
+- [ ] Change touches payment/auth/PII without human approval
+- [ ] Spec Graph not updated to Done
+
+**Output:**
+- `06-verifier/verify.md`
+- `agentic-agent sdd sync-graph` (update spec-graph)
+- `agentic-agent openspec complete <change-id>` (mark Done)
+
+**Time:** 2-3 days
+
+**Next Steps:**
+1. If BLOCKED: Return to Architect/Developer with remediation
+2. If READY: Request human approvals (Security, Payments, Legal if payment feature)
+3. After approvals: Deploy to production
+
+---
+
+## Quick Reference: File Structure
+
+```
+examples/sdd-ecommerce-payments/
+├── 00-setup/
+│   └── agnostic-agent.yaml
+│
+├── 01-initiative/              ← Analyst reads, PM writes
+│   └── initiative.md
+│
+├── 02-risk-assessment/         ← Tech Lead determines workflow
+│   └── risk-classification.md
+│
+├── 03-analyst/                 ← ANALYST ROLE
+│   ├── prompts.md              (example prompt to invoke analyst)
+│   └── discovery.md            (analyst output)
+│
+├── 04-architect/               ← ARCHITECT ROLE
+│   ├── prompts.md
+│   ├── feature-spec.md         (architect output: platform WHAT)
+│   ├── component-spec-billing.md
+│   ├── component-spec-payments.md
+│   └── ADR-001-card-vault.md   (blocking decision)
+│
+├── 05-developer/               ← DEVELOPER ROLE (parallel)
+│   ├── prompts.md
+│   ├── impl-spec-billing.md    (developer output: implementation HOW)
+│   └── tasks.yaml              (developer output: task breakdown)
+│
+├── 06-verifier/                ← VERIFIER ROLE
+│   ├── prompts.md
+│   └── verify.md               (verifier output: evidence)
+│
+├── 07-gate-checks/
+│   └── gate-check-output.md    (gate 1-5 validation results)
+│
+├── README.md                   (human walkthrough)
+└── AGENT-GUIDE.md             (this file)
+```
+
+---
+
+## Workflow State Machine
+
+```
+START
+  ↓
+Analyst reads discovery
+  ↓
+Analyst interviews team → discovery.md
+  ↓
+Architect reads discovery
+  ↓
+Architect designs → feature-spec + component-specs
+  ↓
+Architect creates ADR-001 (blocking)
+  ↓
+ADR Reviewer decides → ADR APPROVED
+  ↓
+Developer reads component-spec (blocked_by empty)
+  ↓
+Developer implements → impl-spec + tasks
+  ↓
+Engineers code + test
+  ↓
+Verifier checks evidence → verify.md
+  ↓
+Human approvals? (Security, Payments, Legal)
+  ├─ YES → Deploy
+  └─ NO  → Return to Developer
+```
+
+---
+
+## Gate Checks: What Agents Do
+
+Each agent self-checks gates before handing off:
+
+**Analyst** → Gate 1-5 on discovery.md
+**Architect** → Gate 1-5 on feature-spec + component-specs
+**Developer** → Gate 1-5 on impl-specs
+**Verifier** → Verify all ACs with evidence
+
+Run: `agentic-agent sdd gate-check <spec-id> --format text`
+
+---
+
+## Key Files to Know
+
+| File | What It Is | Read When |
+|------|-----------|-----------|
+| [01-initiative/initiative.md](./01-initiative/initiative.md) | Problem statement | Before Analyst phase |
+| [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md) | Determines workflow type | Before Analyst phase |
+| [03-analyst/discovery.md](./03-analyst/discovery.md) | Team insights + evidence | Before Architect phase |
+| [04-architect/feature-spec.md](./04-architect/feature-spec.md) | Overall solution design | Before Developer phase |
+| [04-architect/component-spec-*.md](./04-architect/) | Per-service design | Before Developer phase (component-specific) |
+| [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) | Blocking decision | Before Developer phase (blocks implementation) |
+| [05-developer/impl-spec-*.md](./05-developer/) | Code structure | During development |
+| [05-developer/tasks.yaml](./05-developer/tasks.yaml) | Task decomposition | During development (assign tasks) |
+| [06-verifier/verify.md](./06-verifier/verify.md) | Test evidence | Before deployment |
+| [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md) | Gate validation | Before handoff (architect), before deployment (verifier) |
+
+---
+
+## Commands You'll Use
+
+```bash
+# Setup
+agentic-agent sdd agents install
+
+# Start initiative
+agentic-agent sdd start "Subscription Billing" --risk critical
+
+# View workflow
+agentic-agent sdd workflow show <initiative-id>
+
+# Gate check
+agentic-agent sdd gate-check SBL-2025-Q1 --format text
+
+# List ADRs
+agentic-agent sdd adr list
+
+# Resolve ADR
+agentic-agent sdd adr resolve ADR-001
+
+# Sync graph
+agentic-agent sdd sync-graph
+
+# Complete initiative
+agentic-agent openspec complete SBL-2025-Q1
+```
+
+---
+
+## Success Criteria Per Agent
+
+**Analyst:** Discovery.md complete, all exit gates pass
+**Architect:** Feature-spec + component-specs complete, all gates pass (or blocked by ADR)
+**Developer:** impl-spec + tasks.yaml complete, code written, all tests passing
+**Verifier:** verify.md complete, all ACs verified, human approvals obtained
+
+---
+
+**Use this guide to execute each phase autonomously. Start with your role above.**
+
+````
+
+</details>
+
+### README.md
+
+<details>
+  <summary>README.md</summary>
+
+````markdown
+# SDD Methodology: Full End-to-End Example
+
+**Scenario:** ShopFlow e-commerce platform adds **Subscription Billing** feature (recurring payments + card storage)
+
+**Risk Level:** `CRITICAL` (payment + PII) → **Full Workflow**
+
+**Timeline:** 3-4 weeks (Analyst → Architect → Developer × 5 → Verifier)
+
+---
+
+## Table of Contents
+
+1. [What This Example Shows](#what-this-example-shows)
+2. [Quick Start: How to Read This](#quick-start-how-to-read-this)
+3. [Step-by-Step Walkthrough](#step-by-step-walkthrough)
+4. [Key Artifacts](#key-artifacts)
+5. [For Humans vs. AI Agents](#for-humans-vs-ai-agents)
+6. [Try It Yourself](#try-it-yourself)
+
+---
+
+## What This Example Shows
+
+This directory contains a **complete, realistic worked example** of the SDD (Spec-Driven Development) methodology in action. It shows:
+
+- **Every step** from problem definition to verification
+- **Every artifact** produced at each phase
+- **Exact prompts** to invoke each agent role (Analyst, Architect, Developer, Verifier)
+- **Real gate checks** showing what passing and failing look like
+- **How decisions (ADRs) block and unblock implementation**
+- **How parallel development works** (multiple developer agents simultaneously)
+- **Verification with observable evidence** (tests, logs, metrics)
+
+**This is not a toy example.** It includes realistic:
+- Multi-service coordination (5 services affected)
+- Payment system integration (Stripe vault decision)
+- PII/compliance requirements (PCI-DSS)
+- Observability specs (logging, metrics, tracing, alerts)
+- Edge cases (charge failures, retries, rollback)
+- Risk assessment (critical payment data)
+
+---
+
+## Quick Start: How to Read This
+
+### Option 1: Timeline (Humans)
+
+Read in this order to understand the workflow:
+
+1. [01-initiative/initiative.md](./01-initiative/initiative.md) — PM defines the problem & goals
+2. [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md) — Determines workflow type (why Full?)
+3. [03-analyst/prompts.md](./03-analyst/prompts.md) & [discovery.md](./03-analyst/discovery.md) — Analyst interviews team & produces discovery
+4. [04-architect/prompts.md](./04-architect/prompts.md), [feature-spec.md](./04-architect/feature-spec.md) & component specs — Architect designs the solution
+5. [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) — Blocking decision resolved
+6. [05-developer/prompts.md](./05-developer/prompts.md), [impl-spec-billing.md](./05-developer/impl-spec-billing.md), [tasks.yaml](./05-developer/tasks.yaml) — Developers implement
+7. [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md) — Verify all specs pass gates
+8. [06-verifier/prompts.md](./06-verifier/prompts.md) & [verify.md](./06-verifier/verify.md) — Verifier confirms all ACs with evidence
+
+### Option 2: Role-Based (AI Agents)
+
+See [AGENT-GUIDE.md](./AGENT-GUIDE.md) for concise instructions per agent role.
+
+### Option 3: Deep Dive (Architects/Engineers)
+
+- Read [04-architect/feature-spec.md](./04-architect/feature-spec.md) to understand the complete feature design
+- Read [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) to see implementation detail
+- Read [06-verifier/verify.md](./06-verifier/verify.md) to see how verification works
+
+---
+
+## Step-by-Step Walkthrough
+
+### Step 0: Setup
+
+Configure the project:
+
+```bash
+# Install SDD agent skills
+agentic-agent sdd agents install --dir .claude/agents
+
+# View config (see 00-setup/agnostic-agent.yaml)
+cat agnostic-agent.yaml
+```
+
+---
+
+### Step 1: Initiative Definition
+
+**Who:** Product Manager
+
+**Input:** Business problem
+
+**Output:** [01-initiative/initiative.md](./01-initiative/initiative.md)
+
+**What Happens:**
+- PM uses the `initiative-definition` skill to define the problem: "40% of support tickets are about subscriptions"
+- PM sets goals: "Enable subscriptions, reduce support to < 5%"
+- PM lists affected components: Billing (new), Payments, Email, User Service
+
+**Read:** [01-initiative/initiative.md](./01-initiative/initiative.md)
+
+---
+
+### Step 2: Risk Assessment & Workflow Selection
+
+**Who:** Tech Lead or Architect
+
+**Input:** Initiative
+
+**Output:** [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md)
+
+**What Happens:**
+- Team answers 5 questions: Payment? PII? Multiple services? Rollback hard? Observability clear?
+- Answers → Payment: YES, Multiple services: YES, Rollback: HARD → Risk = CRITICAL
+- Risk = CRITICAL → Workflow = FULL (Analyst → Architect → Developer(s) → Verifier)
+- CLI command: `agentic-agent sdd start "Subscription Billing" --risk critical`
+
+**Read:** [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md)
+
+---
+
+### Step 3: Analyst Phase
+
+**Who:** Analyst Agent (or human analyst in collaborative mode)
+
+**Input:** Initiative + Risk Classification
+
+**Output:** [03-analyst/discovery.md](./03-analyst/discovery.md)
+
+**Prompt:** [03-analyst/prompts.md](./03-analyst/prompts.md)
+
+**What Happens:**
+- Analyst calls Platform MCP to get payment policies
+- Analyst interviews team one question at a time:
+  - "What evidence shows this is really a problem?" → 43 support tickets in Jan
+  - "Which services touch subscriptions?" → Billing, Payments, Email, User
+  - "What ADRs are blocking?" → Card vault storage location (ADR-001)
+  - "How will we observe success?" → Metrics, logs, traces
+- Analyst produces discovery.md with problem statement, evidence, affected components, risk classification, blocking ADRs
+
+**Read:** [03-analyst/discovery.md](./03-analyst/discovery.md)
+
+**Exit Gate Check:**
+- ✓ Problem has metric (43 tickets, 8 lost deals)
+- ✓ Evidence is real data (not assumptions)
+- ✓ Affected components named
+- ✓ Risk classified with rationale
+- ✓ Blocking ADRs identified (ADR-001)
+
+---
+
+### Step 4: Architect Phase
+
+**Who:** Architect Agent
+
+**Input:** Discovery.md
+
+**Output:**
+- [04-architect/feature-spec.md](./04-architect/feature-spec.md) — Platform-level WHAT
+- [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) — Billing service HOW
+- [04-architect/component-spec-payments.md](./04-architect/component-spec-payments.md) — Payments service HOW
+- [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) — Blocking decision (card storage)
+
+**Prompt:** [04-architect/prompts.md](./04-architect/prompts.md)
+
+**What Happens:**
+- Architect reads discovery.md
+- Architect calls Platform MCP for payment standards, PCI requirements
+- Architect calls Component MCPs for Billing, Payments, Email patterns & prior ADRs
+- Architect designs feature-spec with 7 acceptance criteria in Given/When/Then format
+- Architect designs 4 component-specs (one per service: Billing, Payments, Email, User)
+- Architect creates ADR-001 to block implementation until card vault decision is made (self-hosted vs. Stripe)
+- Architect runs self-check on all 5 gates
+
+**Read These in Order:**
+1. [04-architect/feature-spec.md](./04-architect/feature-spec.md) — Overall solution design
+2. [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) — Billing Service design
+3. [04-architect/component-spec-payments.md](./04-architect/component-spec-payments.md) — Payments Service design
+4. [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) — Card storage decision (blocks everything)
+
+**Gate Check Result:** Feature-spec and component-specs PASS all 5 gates, but implementation is BLOCKED until ADR-001 is resolved
+
+---
+
+### Step 5a: ADR Resolution (Parallel to Development)
+
+**Who:** CTO + Security Team
+
+**Input:** ADR-001 (card vault options)
+
+**Output:** ADR-001 APPROVED with decision = Stripe Vault
+
+**What Happens:**
+- CTO and Security review 3 options:
+  - A: Self-hosted vault (full control, high PCI burden)
+  - B: Stripe vault (PCI handled by Stripe, lower time-to-market)
+  - C: Hybrid (Stripe tokenize, ShopFlow store)
+- Decision: B (Stripe Vault) chosen for Phase 1 (faster, lower risk)
+- ADR marked APPROVED
+- Blocking ADR removed: `blocked_by: []`
+
+**Read:** [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md)
+
+---
+
+### Step 5b: Developer Phase (Parallel per Component)
+
+**Who:** Developer Agents (2-5 running in parallel, one per component)
+
+**Input:** Component-spec (e.g., component-spec-billing.md)
+
+**Output:** impl-spec + tasks.yaml per component
+
+**Prompt:** [05-developer/prompts.md](./05-developer/prompts.md)
+
+**What Happens (Billing Developer):**
+- Developer reads component-spec-billing.md
+- Developer calls Component MCP for subscription state machine patterns, prior ADRs
+- Developer checks `blocked_by` field — ADR-001 was blocking, but now resolved ✓
+- Developer produces impl-spec-billing.md with:
+  - Exact database schema (plans, subscriptions, subscription_events tables)
+  - Code structure (services, repositories, models)
+  - Edge cases (customer cancels mid-cycle, charge fails 3 times, merchant updates price mid-cycle)
+  - Observability (structured JSON logging, metrics, tracing)
+  - Rollout plan (feature flag strategy, canary, rollback procedure)
+- Developer produces tasks.yaml with 10 development tasks (decomposed, ordered, dependencies)
+
+**Read:**
+- [05-developer/prompts.md](./05-developer/prompts.md) — How to invoke Developer
+- [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) — Billing implementation detail
+- [05-developer/tasks.yaml](./05-developer/tasks.yaml) — Task decomposition
+
+**Key Point:** Multiple developers work in parallel:
+- Developer 1: Billing Service (payment/subscription logic)
+- Developer 2: Payments Service (Stripe integration)
+- Developer 3: Email Service (lifecycle notifications)
+- Developer 4: User Service (subscription tracking)
+
+All blocked until ADR-001 resolved. All unblocked simultaneously. All deliver in parallel.
+
+---
+
+### Step 6: Gate Checks (Before Merge)
+
+**Who:** Architect or Engineer
+
+**Input:** Feature-spec, component-specs, impl-specs
+
+**Output:** [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md)
+
+**What Happens:**
+```bash
+# Run gate check on feature spec
+agentic-agent sdd gate-check SBL-2025-Q1 --format text
+
+# Run gate check on component specs
+agentic-agent sdd gate-check SBL-BILLING-001
+agentic-agent sdd gate-check SBL-PAYMENTS-001
+...
+
+# Result: All gates pass (or specific failures shown with remediation)
+```
+
+**Gate Checks:**
+1. **Gate 1 — Context Completeness:** Every section has `Source:` line (MCP, Initiative, etc.)
+2. **Gate 2 — Domain Validity:** No cross-domain DB access (all event-driven)
+3. **Gate 3 — Integration Safety:** All contracts identified, consumers listed, compatibility plan if breaking
+4. **Gate 4 — NFR Compliance:** Logging, metrics, tracing, PII, performance all specified
+5. **Gate 5 — Ready to Implement:** No blocking ADRs, acceptance criteria testable, unambiguous
+
+**Read:** [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md)
+
+---
+
+### Step 7: Verifier Phase
+
+**Who:** Verifier Agent
+
+**Input:** Merged code, all tests passing
+
+**Output:** [06-verifier/verify.md](./06-verifier/verify.md)
+
+**Prompt:** [06-verifier/prompts.md](./06-verifier/prompts.md)
+
+**What Happens:**
+- Verifier reads all acceptance criteria from feature-spec + component-specs
+- Verifier gathers evidence for each AC:
+  - **AC1 (Merchants can create plans)** → Test: `TestCreatePlan` PASSED, log shows plan created
+  - **AC2 (Customers can start subscriptions)** → Test: `TestCreateSubscription` PASSED, subscription in DB with status ACTIVE
+  - **AC3 (Auto-charges on schedule)** → Test: `TestScheduler` PASSED, 142 subscriptions processed, charges executed
+  - **AC4 (Events emitted)** → Test: `TestEventPublishing` PASSED, 4 event types published
+  - **AC5 (PII masked)** → Test: `TestPIIMasking` PASSED, no plaintext email/card in logs
+  - **AC6 (Failures retry)** → Test: `TestFailureRetry` PASSED, failed charges suspended and retried
+  - **AC7 (Rollback tested)** → Test: `TestRollback` PASSED, kill switch disables new subscriptions, existing continue
+- Verifier checks code quality:
+  - Tests: 127 tests, 100% passing ✓
+  - Coverage: 87% (> 80%) ✓
+  - Lint: 0 errors ✓
+  - Build: Success ✓
+- **BLOCKING CONDITION:** Payment/PII requires human sign-off (Security + Payments + Legal)
+- Verifier marks: "READY FOR PRODUCTION (pending human approval)"
+
+**Read:** [06-verifier/verify.md](./06-verifier/verify.md)
+
+---
+
+### Step 8: Completion & Knowledge Loop
+
+**Who:** DevOps/SRE
+
+**Input:** verify.md (all ACs verified, human approvals signed)
+
+**Output:** Spec marked Done, knowledge updated in Component MCP
+
+**What Happens:**
+```bash
+# Update spec graph
+agentic-agent sdd sync-graph
+
+# Mark complete
+agentic-agent openspec complete SBL-2025-Q1
+
+# Result: Spec status = Done, spec-graph updated
+```
+
+**Knowledge Loop:**
+- Billing Service patterns learned → Component MCP updated for Phase 2
+- Stripe integration patterns → Component MCP updated
+- Edge cases handled (charge retry logic, idempotency) → Component MCP
+- Observability setup (Datadog + OpenTelemetry) → Platform MCP updated
+
+Next initiative benefits from this documented knowledge.
+
+---
+
+## Key Artifacts
+
+| File | Purpose | Owner | Status |
+|------|---------|-------|--------|
+| [01-initiative/initiative.md](./01-initiative/initiative.md) | Problem statement, goals, success metrics | PM | ✓ Final |
+| [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md) | Risk analysis, workflow selection | Tech Lead | ✓ Final |
+| [03-analyst/discovery.md](./03-analyst/discovery.md) | Evidence-based problem analysis | Analyst Agent | ✓ Final |
+| [04-architect/feature-spec.md](./04-architect/feature-spec.md) | Platform-level WHAT (7 ACs, NFRs) | Architect Agent | ✓ Approved |
+| [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md) | Billing Service design | Architect Agent | ✓ Approved |
+| [04-architect/component-spec-payments.md](./04-architect/component-spec-payments.md) | Payments Service design | Architect Agent | ✓ Approved |
+| [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md) | Card vault storage decision | CTO + Security | ✓ Approved (Stripe chosen) |
+| [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md) | Billing implementation detail | Developer Agent | ✓ Final |
+| [05-developer/tasks.yaml](./05-developer/tasks.yaml) | 10 development tasks, dependencies, effort | Developer Agent | ✓ Ready |
+| [06-verifier/verify.md](./06-verifier/verify.md) | Test evidence for all ACs | Verifier Agent | ✓ Final (human approval pending) |
+| [07-gate-checks/gate-check-output.md](./07-gate-checks/gate-check-output.md) | Gate 1-5 validation results | Architect/Engineer | ✓ All passing |
+
+---
+
+## For Humans vs. AI Agents
+
+### Humans Should Read:
+
+1. **Introduction** (this README) — understand the flow
+2. [01-initiative/initiative.md](./01-initiative/initiative.md) — problem statement
+3. [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md) — understand why Full workflow
+4. [04-architect/feature-spec.md](./04-architect/feature-spec.md) — understand the overall solution
+5. [06-verifier/verify.md](./06-verifier/verify.md) — understand how we verified it works
+
+### AI Agents Should Read:
+
+Start with [AGENT-GUIDE.md](./AGENT-GUIDE.md) for concise role-based instructions.
+
+Or follow the timeline above, reading prompts.md + artifact files for each phase.
+
+---
+
+## Try It Yourself
+
+### Option 1: Replay This Example in Your Project
+
+```bash
+# 1. Copy this example to your project
+cp -r examples/sdd-ecommerce-payments/ my-project/
+
+# 2. Update initiative.md with your problem
+# 3. Run risk assessment
+agentic-agent sdd start "Your Feature" --risk critical
+
+# 4. Run analyst agent with your team
+# (Use 03-analyst/prompts.md as template)
+
+# 5. Continue through each phase...
+```
+
+### Option 2: Customize for Your Feature
+
+Use the artifacts in this example as templates:
+
+- **Feature-spec template:** [04-architect/feature-spec.md](./04-architect/feature-spec.md)
+- **Component-spec template:** [04-architect/component-spec-billing.md](./04-architect/component-spec-billing.md)
+- **Implementation-spec template:** [05-developer/impl-spec-billing.md](./05-developer/impl-spec-billing.md)
+- **Verification template:** [06-verifier/verify.md](./06-verifier/verify.md)
+
+### Option 3: Study for Understanding
+
+Read the spec files to understand:
+- How to write Given/When/Then acceptance criteria (see feature-spec AC1-AC7)
+- How to design edge cases (see impl-spec-billing Edge Cases table)
+- How to document observability (see NFRs section in feature-spec)
+- How to write blocking ADRs (see ADR-001-card-vault.md)
+- How to verify with evidence (see verify.md)
+
+---
+
+## Summary: SDD in 8 Phases
+
+| Phase | Agent/Role | Input | Output | Duration |
+|-------|-----------|-------|--------|----------|
+| 1 | Initiative | Problem | [initiative.md](./01-initiative/initiative.md) | 1-2d |
+| 2 | Tech Lead | Initiative | [risk-classification.md](./02-risk-assessment/risk-classification.md) | 1d |
+| 3 | Analyst | Discovery interview | [discovery.md](./03-analyst/discovery.md) | 3-4d |
+| 4 | Architect | Discovery | [feature-spec.md](./04-architect/feature-spec.md) + [component-specs](./04-architect/) | 5d |
+| 5 | CTO + Security | ADRs | [ADR-001 APPROVED](./04-architect/ADR-001-card-vault.md) | 3-5d |
+| 6 | Developers (parallel) | Component-specs | [impl-specs](./05-developer/) + [tasks.yaml](./05-developer/tasks.yaml) | 8-10d |
+| 7 | Engineers | Code + tests | [gate checks PASS](./07-gate-checks/gate-check-output.md) | 1d |
+| 8 | Verifier | Merged code | [verify.md](./06-verifier/verify.md) ✓ APPROVED | 2d |
+
+**Total:** 3-4 weeks for critical payment feature, with evidence at every step.
+
+---
+
+## Questions?
+
+- **What is SDD?** → Read [docs/sdd-mcp/TARGET-OPERATING-MODEL.md](../../docs/sdd-mcp/operation%20model/TARGET-OPERATING-MODEL.md)
+- **How do I run the Analyst phase?** → See [03-analyst/prompts.md](./03-analyst/prompts.md)
+- **What's an ADR?** → See [04-architect/ADR-001-card-vault.md](./04-architect/ADR-001-card-vault.md)
+- **How do I write acceptance criteria?** → See feature-spec ACs
+- **How do I verify?** → See [06-verifier/verify.md](./06-verifier/verify.md)
+
+---
+
+**Made with SDD. Start your next feature the right way.**
+
+````
+
+</details>
+

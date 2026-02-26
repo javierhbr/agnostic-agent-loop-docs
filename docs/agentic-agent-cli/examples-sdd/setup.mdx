@@ -1,0 +1,76 @@
+---
+id: examples-sdd-setup
+title:  Setup (Phase 0)
+slug: /agentic-agent-cli/examples/sdd/setup
+description: Configure the sample Subscription Billing project before running the SDD Full workflow.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="15x"
+  title=" Setup (Phase 0)"
+  desc="Configure the sample Subscription Billing project before running the SDD Full workflow."
+/>
+
+<CalloutBox type="teal" label="Source">
+  Files from tmp/sdd-ecommerce-payments
+</CalloutBox>
+
+### Setup config
+
+<details>
+  <summary>00-setup/agnostic-agent.yaml</summary>
+
+````yaml
+# Example Project Configuration: ShopFlow (Subscription Billing)
+
+agent: claude-code
+
+paths:
+  spec_dirs:
+    - .agentic/specs
+    - docs/sdd-mcp/specs
+
+skills:
+  packs:
+    - sdd/analyst
+    - sdd/architect
+    - sdd/developer
+    - sdd/verifier
+    - sdd/workflow-router
+    - sdd/initiative-definition
+    - sdd/risk-assessment
+    - sdd/gate-check
+    - sdd/adr
+
+context:
+  bundle_includes:
+    - tech-stack.md
+    - workflow-preferences.md
+    - SkillInstructions
+
+openspec:
+  platform_mcp_url: "https://mcp.shopflow.internal/platform"
+  component_mcp_urls:
+    billing: "https://mcp.shopflow.internal/components/billing"
+    payments: "https://mcp.shopflow.internal/components/payments"
+    email: "https://mcp.shopflow.internal/components/email"
+    user: "https://mcp.shopflow.internal/components/user"
+
+# Feature flags for SDD phases
+features:
+  subscriptions_enabled: false  # disabled during development
+  subscriptions_kill_switch: true  # rollback kill switch available
+
+# Initiative metadata
+initiative:
+  name: "Subscription Billing Platform"
+  id: "SBL-2025-Q1"
+  risk_level: "critical"
+  workflow: "full"
+
+````
+
+</details>
+
