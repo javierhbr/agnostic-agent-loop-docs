@@ -115,6 +115,112 @@ agentic-agent sdd adr resolve <adr-id>
 - Rollback is hard and failure is costly.
 - You need an audit trail and explicit sign-off.
 
+## Diagrams
+
+<details>
+  <summary>Diagram: Workflow selection decision tree</summary>
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│         START: What are you building?                   │
+└────────────────────┬────────────────────────────────────┘
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+   Bug/Hotfix?                Feature/Change?
+   (< 1 hour)                 (1-4 weeks)
+        │                         │
+        ▼                         ▼
+   ┌─────────────┐         ┌──────────────┐
+   │    TASKS    │         │   OPENSPEC   │
+   │ (Simplest)  │         │   (Balanced) │
+   │             │         │              │
+   │ • Create    │         │ • Init       │
+   │ • Claim     │         │ • Proposal   │
+   │ • Complete  │         │ • Tasks      │
+   │             │         │ • Archive    │
+   └─────────────┘         └──────┬───────┘
+                                  │
+                        ┌─────────┴──────────┐
+                        │                    │
+                   High Risk?           Monorepo?
+                   (Payment/Auth)       (Multi-Svc)
+                        │                    │
+                        ▼                    ▼
+                   ┌──────────┐         ┌──────────────┐
+                   │   SDD    │         │ Multi-Path   │
+                   │  (Full)  │         │   Config     │
+                   │          │         │              │
+                   │ • Gates  │         │ specDirs:    │
+                   │ • ADRs   │         │  - packages/*│
+                   │ • Phases │         │  - specs     │
+                   │          │         │              │
+                   └──────────┘         └──────────────┘
+```
+
+</details>
+
+<details>
+  <summary>Diagram: Task vs OpenSpec vs SDD (workflow tiers)</summary>
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│                      WORKFLOW TIERS                             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+TIER 1: TASKS (Simplest)
+┌──────────────────────────────────────────────────────────────┐
+│ $ agentic-agent task create "Fix X"                          │
+│ $ agentic-agent task claim <id>                              │
+│ $ agentic-agent task complete <id>                           │
+│                                                              │
+│ ├─ Use for:      Bug fixes, hotfixes, small refactors      │
+│ ├─ Team size:    Solo developer                            │
+│ ├─ Duration:     < 1 day                                   │
+│ ├─ Spec file:    NO                                        │
+│ ├─ Gates:        NO                                        │
+│ └─ Setup time:   5 minutes                                 │
+└──────────────────────────────────────────────────────────────┘
+                            ↓ Upgrade if...
+                   (> 1 week, clear requirements)
+
+TIER 2: OPENSPEC (Balanced)
+┌──────────────────────────────────────────────────────────────┐
+│ $ agentic-agent openspec init "Name" --from spec.md          │
+│ $ agentic-agent task claim <id>                              │
+│ $ agentic-agent task complete <id>                           │
+│ $ agentic-agent openspec complete <id>                       │
+│                                                              │
+│ ├─ Use for:      Features with acceptance criteria          │
+│ ├─ Team size:    1-3 people                                │
+│ ├─ Duration:     1-2 weeks                                 │
+│ ├─ Spec file:    proposal.md + tasks.md                    │
+│ ├─ Gates:        Optional (manual checklist)               │
+│ └─ Setup time:   10 minutes                                │
+└──────────────────────────────────────────────────────────────┘
+                            ↓ Upgrade if...
+                   (High risk: payments, auth, PII)
+
+TIER 3: SDD (Full Methodology)
+┌──────────────────────────────────────────────────────────────┐
+│ $ agentic-agent sdd start "Name" --risk critical             │
+│ $ agentic-agent sdd workflow show <id>                       │
+│ $ agentic-agent sdd gate-check <id>                          │
+│ $ agentic-agent sdd adr list                                 │
+│                                                              │
+│ ├─ Use for:      Critical features, regulatory compliance   │
+│ ├─ Team size:    3+ people, multiple teams                 │
+│ ├─ Duration:     3-4 weeks                                 │
+│ ├─ Spec file:    Full SDD spec (10+ pages)                 │
+│ ├─ Gates:        5 mandatory gates (Context→Domain→...)    │
+│ └─ Setup time:   1+ hours                                  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+</details>
+
 ## Decision Tree
 
 ```text

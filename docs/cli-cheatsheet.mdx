@@ -106,32 +106,26 @@ mymonorepo/
 
 ### Minimal (single package)
 
-```yaml
-# agnostic-agent.yaml
+```yaml title="agnostic-agent.yaml (single package)"
 project:
   name: MyProject
   version: 0.1.0
-
 agents:
   defaults:
     model: claude-3-5-sonnet-20241022
-
 paths:
   openSpecDir: .agentic/openspec/changes
 ```
 
 ### Monorepo (multi-path spec discovery)
 
-```yaml
-# agnostic-agent.yaml
+```yaml title="agnostic-agent.yaml (monorepo)"
 project:
   name: MyMonorepo
   version: 0.1.0
-
 agents:
   defaults:
     model: claude-3-5-sonnet-20241022
-
 paths:
   openSpecDir: .agentic/openspec/changes
   specDirs:
@@ -139,6 +133,55 @@ paths:
     - apps/*/specs
     - specs
 ```
+
+<details>
+  <summary>Diagram: Config comparison (single package vs monorepo)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│        AGNOSTIC-AGENT.YAML: Single vs Monorepo              │
+└──────────────────────────────────────────────────────────────┘
+
+SINGLE PACKAGE:
+┌────────────────────────────────────────┐
+│ project:                               │
+│   name: MyProject                      │
+│   version: 0.1.0                       │
+│                                        │
+│ agents:                                │
+│   defaults:                            │
+│     model: claude-3-5-sonnet-20241022 │
+│                                        │
+│ paths:                                 │
+│   openSpecDir: .agentic/openspec/..   │
+└────────────────────────────────────────┘
+                ↓
+        (specs in .agentic/spec/ or root)
+
+
+MONOREPO:
+┌────────────────────────────────────────┐
+│ project:                               │
+│   name: MyMonorepo                     │
+│   version: 0.1.0                       │
+│                                        │
+│ agents:                                │
+│   defaults:                            │
+│     model: claude-3-5-sonnet-20241022 │
+│                                        │
+│ paths:                                 │
+│   openSpecDir: .agentic/openspec/..   │
+│   specDirs:                            │
+│     - packages/*/specs     ← KEY!      │
+│     - apps/*/specs                     │
+│     - specs                            │
+└────────────────────────────────────────┘
+                ↓
+  (specs auto-discovered in multiple places)
+  (first match wins in order above)
+```
+
+</details>
 
 ## Implementation Workflow (Plan -> Build -> Verify)
 

@@ -70,3 +70,72 @@ import styles from '@site/src/components/tom/tom.module.css';
 <CalloutBox type="red" label="Failure rule">
   If any gate fails, the system blocks progress until the failure is resolved. Enforcement happens through agent checklists and CI spec-link validation in both repos.
 </CalloutBox>
+
+<details>
+  <summary>Diagram: SDD gate-check flow (high-risk features)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│       SDD GATE CHECKS (High-Risk Features)                   │
+└──────────────────────────────────────────────────────────────┘
+
+agentic-agent sdd start "Payment Processing" --risk critical
+            ↓
+GATE 1: CONTEXT GATE
+┌───────────────────────────────────┐
+│ ✓ Spec is in code repo            │
+│ ✓ Team has read spec              │
+│ ✓ Dependencies identified         │
+│ ✓ Tech stack chosen               │
+└───────────────────────────────────┘
+      ✅ PASS → Continue
+      ❌ FAIL → Fix and re-check
+            ↓
+GATE 2: DOMAIN GATE
+┌───────────────────────────────────┐
+│ ✓ Acceptance criteria clear       │
+│ ✓ Edge cases documented           │
+│ ✓ Error handling designed         │
+│ ✓ Contracts between services OK   │
+└───────────────────────────────────┘
+      ✅ PASS → Continue
+      ❌ FAIL → Update spec
+            ↓
+GATE 3: INTEGRATION GATE
+┌───────────────────────────────────┐
+│ ✓ External APIs documented        │
+│ ✓ Mock strategy defined           │
+│ ✓ Test data prepared              │
+│ ✓ Observability points chosen     │
+└───────────────────────────────────┘
+      ✅ PASS → Continue
+      ❌ FAIL → Add design details
+            ↓
+GATE 4: NFR GATE (Non-Functional)
+┌───────────────────────────────────┐
+│ ✓ Performance targets set         │
+│ ✓ Security requirements clear     │
+│ ✓ Scalability approach defined    │
+│ ✓ Compliance checklist done       │
+└───────────────────────────────────┘
+      ✅ PASS → Continue
+      ❌ FAIL → Add NFR details
+            ↓
+GATE 5: READY GATE
+┌───────────────────────────────────┐
+│ ✓ All tasks broken down           │
+│ ✓ Dependencies resolved           │
+│ ✓ Team assigned                   │
+│ ✓ Timeline realistic              │
+└───────────────────────────────────┘
+      ✅ PASS → Implementation starts
+      ❌ FAIL → Refine plan
+            ↓
+  agentic-agent sdd gate-check <spec-id>
+        (checks all 5 gates)
+            ↓
+    Either: ✅ ALL PASS (proceed)
+    Or:     ❌ FAILURES (fix then retry)
+```
+
+</details>

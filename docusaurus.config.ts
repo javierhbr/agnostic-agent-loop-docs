@@ -4,15 +4,15 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { ThemeConfig } from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'TOM · SDD + MCP',
-  tagline: 'Target Operating Model — Spec-Driven Development',
+  title: 'AgenticAgent + SDD + MCP',
+  tagline: 'Spec-Driven Development',
   favicon: 'img/favicon.ico',
 
   url: 'https://your-org.github.io',
   baseUrl: '/',
 
   organizationName: 'your-org',
-  projectName: 'tom-docs',
+  projectName: 'agenticagent',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -57,9 +57,9 @@ const config: Config = {
 
     // ── Navbar ──────────────────────────────────────────
     navbar: {
-      title: 'TOM · V3.0 · 2026',
+      title: 'AgenticAgent · V3.0 · 2026',
       logo: {
-        alt: 'TOM Logo',
+        alt: 'AgenticAgent Logo',
         src: 'img/logo.svg',
         srcDark: 'img/logo-dark.svg',
       },
@@ -122,7 +122,7 @@ const config: Config = {
           ],
         },
         {
-          href: 'https://github.com/your-org/tom-docs',
+          href: 'https://github.com/your-org/agenticagent',
           label: 'GitHub',
           position: 'right',
         },
@@ -168,7 +168,7 @@ const config: Config = {
         },
       ],
       copyright:
-        '"Software is no longer just built — it is specified, validated, and executed as a system of knowledge." — TOM v3.0',
+        '"Software is no longer just built — it is specified, validated, and executed as a system of knowledge." — AgenticAgent v3.0',
     },
 
     // ── Syntax highlighting ─────────────────────────────

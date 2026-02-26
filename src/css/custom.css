@@ -344,12 +344,22 @@ code {
   color: var(--tom-rust) !important;
 }
 
+/* Docusaurus code block container */
+.theme-code-block {
+  border: 1px solid var(--tom-border);
+  border-radius: 10px;
+  background: var(--tom-surface);
+  box-shadow: var(--tom-shadow-sm);
+  overflow: hidden;
+}
+
 .prism-code {
   font-family: var(--tom-mono) !important;
   font-size: 12.5px !important;
   background: var(--tom-surface) !important;
   border: 1px solid var(--tom-border) !important;
   border-radius: 8px !important;
+  line-height: 1.55;
 }
 
 .prism-code code {
@@ -365,6 +375,18 @@ pre {
   border-radius: 8px !important;
 }
 
+/* When inside a Docusaurus code block container, avoid double borders and tune spacing */
+.theme-code-block pre,
+.theme-code-block .prism-code {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.theme-code-block .prism-code {
+  padding: 1.05rem 1.15rem !important;
+}
+
 /* Code block filename/title bar */
 .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-Content-styles-module {
   font-family: var(--tom-mono);
@@ -375,6 +397,32 @@ pre {
   border-bottom: 1px solid var(--tom-border);
   color: var(--tom-ink-faint);
   border-radius: 8px 8px 0 0;
+}
+
+/* More robust selector for the title bar (CSS-module class changes across versions) */
+.theme-code-block [class*='codeBlockTitle_'] {
+  font-family: var(--tom-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: var(--tom-surface2);
+  border-bottom: 1px solid var(--tom-border);
+  color: var(--tom-ink-faint);
+}
+
+/* Copy button */
+.theme-code-block [class*='copyButton_'] {
+  background: var(--tom-surface2) !important;
+  border: 1px solid var(--tom-border) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  color: var(--tom-ink3) !important;
+  opacity: 0.9;
+}
+
+.theme-code-block [class*='copyButton_']:hover {
+  background: var(--tom-rust-dim) !important;
+  opacity: 1;
 }
 
 /* ── BLOCKQUOTE ─────────────────────────────────────────── */
@@ -400,10 +448,12 @@ blockquote p {
 /* ── TABLES ─────────────────────────────────────────────── */
 table {
   border-collapse: collapse;
+  /* Infima sets `display: block` for responsive overflow, but it creates awkward
+     empty space on wide layouts. Prefer true table layout on desktop. */
+  display: table;
   width: 100%;
   border: 1px solid var(--tom-border);
   border-radius: 10px;
-  overflow: hidden;
   box-shadow: var(--tom-shadow-sm);
   font-size: 13.5px;
 }
@@ -427,6 +477,16 @@ tbody tr {
   background: var(--tom-surface);
   border-bottom: 1px solid var(--tom-border);
   transition: background .15s;
+}
+
+tbody td {
+  padding: 1rem 1.25rem;
+  color: var(--tom-ink2);
+}
+
+tbody td:first-child {
+  font-weight: 700;
+  color: var(--tom-ink);
 }
 
 tbody tr:hover {

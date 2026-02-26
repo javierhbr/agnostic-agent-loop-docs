@@ -35,6 +35,102 @@ Prompt -> paste into file -> CLI tracks -> humans review -> implement -> verify 
 
 If you skip the "paste into file" step, you lose the audit trail and your team re-learns the same decisions later.
 
+<details>
+  <summary>Diagram: Spec -> OpenSpec -> tasks -> code (spec to code flow)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│          FROM SPEC TO IMPLEMENTED CODE                       │
+└──────────────────────────────────────────────────────────────┘
+
+SPEC FILE (requirements.md):
+┌────────────────────────────────────┐
+│ # OAuth Integration                │
+│                                    │
+│ ## Problem                         │
+│ Users can't login with OAuth       │
+│                                    │
+│ ## Solution                        │
+│ Add OAuth 2.0 flow (Google/GitHub) │
+│                                    │
+│ ## Acceptance Criteria             │
+│ - [ ] Users can login with Google  │
+│ - [ ] Users can login with GitHub  │
+│ - [ ] Tokens refresh automatically │
+│ - [ ] Tests pass                   │
+└────────────────────────────────────┘
+            ↓
+  agentic-agent openspec init "OAuth" --from requirements.md
+            ↓
+
+AUTO-GENERATED PROPOSAL.MD:
+┌────────────────────────────────────┐
+│ # OAuth Integration                │
+│                                    │
+│ OAuth 2.0 support for Google and   │
+│ GitHub to enable passwordless auth │
+│ with automatic token refresh       │
+└────────────────────────────────────┘
+            ↓
+
+AUTO-GENERATED TASKS.MD:
+┌────────────────────────────────────┐
+│ ## Tasks                           │
+│                                    │
+│ 1. Design OAuth provider interface │
+│    - Files: src/oauth/provider.ts  │
+│    - Acceptance: tests pass        │
+│                                    │
+│ 2. Implement Google OAuth          │
+│    - Files: src/oauth/google.ts    │
+│    - Acceptance: login test passes │
+│                                    │
+│ 3. Implement GitHub OAuth          │
+│    - Files: src/oauth/github.ts    │
+│    - Acceptance: login test passes │
+│                                    │
+│ 4. Add token refresh logic         │
+│    - Files: src/oauth/refresh.ts   │
+│    - Acceptance: refresh works     │
+│                                    │
+│ 5. Update UI with OAuth buttons    │
+│    - Files: src/pages/login.tsx    │
+│    - Acceptance: buttons appear    │
+│                                    │
+│ 6. Write integration tests         │
+│    - Files: tests/oauth.test.ts    │
+│    - Acceptance: all tests pass    │
+└────────────────────────────────────┘
+            ↓
+        agentic-agent task claim task-1
+            ↓
+  FOR EACH TASK (Prompt Guide: "Package-Specific Implementation")
+  ┌────────────────────────────────────┐
+  │ Using Prompt #2 (Package-Specific) │
+  │                                    │
+  │ Claude suggests:                   │
+  │ ├─ Interface design                │
+  │ ├─ Code skeleton                   │
+  │ ├─ Files to create                 │
+  │ └─ Test structure                  │
+  │                                    │
+  │ Developer:                         │
+  │ ├─ Writes code based on prompt     │
+  │ ├─ Runs tests: npm test            │
+  │ └─ Commits changes                 │
+  └────────────────────────────────────┘
+            ↓
+        agentic-agent task complete task-1
+            ↓
+        ... repeat for all tasks ...
+            ↓
+        agentic-agent openspec complete oauth
+            ↓
+    ✅ ACCEPTANCE CRITERIA MET
+```
+
+</details>
+
 ## OpenSpec Prompts (Small Features)
 
 <details>
@@ -120,6 +216,78 @@ Show:
 1) Evidence per acceptance criterion (tests / logs / screenshots)
 2) A short "what changed" summary
 3) Any remaining risks or follow-ups
+```
+
+</details>
+
+<details>
+  <summary>Diagram: When to use each of the 7 implementation prompts</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│       7 IMPLEMENTATION PROMPTS: When to Use Each             │
+└──────────────────────────────────────────────────────────────┘
+
+PROJECT TIMELINE:
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  DAY 1: PLANNING                                            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Prompt #1: Spec Review                              │   │
+│  │ "Break spec into concrete tasks"                    │   │
+│  │ → Generates task checklist                          │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  DAYS 2-N: IMPLEMENTATION                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ For EACH task:                                      │   │
+│  │                                                     │   │
+│  │ Prompt #2: Package-Specific                        │   │
+│  │ "Design + code example for this task in my package"│   │
+│  │ → Generates design + code skeleton                 │   │
+│  │                                                     │   │
+│  │ Prompt #3: Integration (if multi-service)          │   │
+│  │ "How does my service integrate with others?"       │   │
+│  │ → Generates contract + integration points          │   │
+│  │                                                     │
+│  │ Prompt #4: Testing                                 │
+│  │ "Structure tests for these acceptance criteria"    │
+│  │ → Generates test outline + mocks                   │
+│  │                                                     │
+│  │ [Developer implements]                             │
+│  │ [Runs tests]                                       │
+│  │ [Commits changes]                                  │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  DEPENDENCY PHASE (if multi-service):                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Prompt #6: Dependency Analysis                      │   │
+│  │ "What's the implementation order? Rollout strategy?"│   │
+│  │ → Generates dependency graph + sequence            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  VERIFICATION PHASE:                                       │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Prompt #5: Verification                             │   │
+│  │ "Is everything complete? All criteria met?"         │   │
+│  │ → Generates checklist + blocking issues            │   │
+│  │                                                     │
+│  │ Prompt #7: Documentation                           │
+│  │ "Generate docs for this feature"                   │
+│  │ → Generates API docs + guides                      │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+WHEN STUCK:
+┌─────────────────────────────────────────────────────────────┐
+│ Design unclear?        → Use Prompt #2 (Package-Specific)   │
+│ Cross-service problem? → Use Prompt #3 (Integration)        │
+│ Testing strategy?      → Use Prompt #4 (Testing)            │
+│ Implementation order?  → Use Prompt #6 (Dependency)         │
+│ "Is it done?"          → Use Prompt #5 (Verification)       │
+│ "How do I document?"   → Use Prompt #7 (Documentation)      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 </details>

@@ -73,6 +73,67 @@ agentic-agent openspec complete <change-id>
 agentic-agent openspec archive <change-id>
 ```
 
+<details>
+  <summary>Diagram: Single package workflow (OpenSpec)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│         SINGLE PACKAGE: OpenSpec Workflow                    │
+└──────────────────────────────────────────────────────────────┘
+
+myproject/
+├── agnostic-agent.yaml
+├── requirements.md          ← Write spec
+├── src/
+└── .agentic/
+    └── openspec/changes/    ← Tracks lifecycle
+
+WORKFLOW:
+
+  Day 1: PLAN
+  ┌──────────────────────────────────────┐
+  │ cat > requirements.md                │
+  │ # Feature Name                       │
+  │ ## Problem: ...                      │
+  │ ## Solution: ...                     │
+  │ ## Acceptance Criteria: ...          │
+  └──────────────────────────────────────┘
+            ↓
+  ┌──────────────────────────────────────┐
+  │ agentic-agent openspec init          │
+  │   "Feature" --from requirements.md   │
+  └──────────────────────────────────────┘
+            ↓
+        Creates:
+  .agentic/openspec/changes/feature/
+    ├── proposal.md       ← Auto-generated summary
+    └── tasks.md          ← Auto-decomposed tasks
+
+  Days 2-N: BUILD
+  ┌──────────────────────────────────────┐
+  │ For each task:                       │
+  │                                      │
+  │ agentic-agent task claim <id>        │
+  │ [Code in src/]                       │
+  │ agentic-agent task complete <id>     │
+  └──────────────────────────────────────┘
+            ↓
+  Final Day: VERIFY & RELEASE
+  ┌──────────────────────────────────────┐
+  │ agentic-agent openspec status        │
+  │   Check: all criteria met? ✓         │
+  │   Check: tests pass? ✓               │
+  │   Check: code reviewed? ✓            │
+  │                                      │
+  │ agentic-agent openspec complete      │
+  │ agentic-agent openspec archive       │
+  └──────────────────────────────────────┘
+            ↓
+        ✅ DONE
+```
+
+</details>
+
 ### What to write in `proposal.md`
 
 Keep it short:

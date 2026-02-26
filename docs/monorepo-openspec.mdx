@@ -30,18 +30,16 @@ import { SectionHeader, CalloutBox } from '@site/src/components/tom';
 
 Create or update `agnostic-agent.yaml` in repo root:
 
-```yaml
+```yaml title="agnostic-agent.yaml"
 project:
   name: MyMonorepo
   version: 0.1.0
   roots:
     - .
-
 agents:
   defaults:
     max_tokens: 4000
     model: claude-3-5-sonnet-20241022
-
 paths:
   openSpecDir: .agentic/openspec/changes
   specDirs:
@@ -51,6 +49,46 @@ paths:
   contextDirs:
     - .agentic/context
 ```
+
+<details>
+  <summary>Diagram: Multi-path spec discovery (first match wins)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│         MONOREPO: Spec Discovery & Resolution                   │
+└──────────────────────────────────────────────────────────────────┘
+
+agnostic-agent.yaml (root config):
+┌────────────────────────────────────┐
+│ paths:                             │
+│   specDirs:                        │
+│     - packages/*/specs     ← Rule 1│
+│     - apps/*/specs         ← Rule 2│
+│     - specs                ← Rule 3│
+└────────────────────────────────────┘
+
+When you run:
+  agentic-agent openspec init "Name" --from auth-oauth.md
+
+CLI searches in order (FIRST MATCH WINS):
+┌──────────────────────────────────────────────────────────────────┐
+│ 1. packages/*/specs/auth-oauth.md                               │
+│    ├─ packages/auth-service/specs/auth-oauth.md   ← FOUND! ✓   │
+│    ├─ packages/web-ui/specs/auth-oauth.md         (skip)       │
+│    └─ packages/api/specs/auth-oauth.md            (skip)       │
+│                                                                  │
+│ 2. apps/*/specs/auth-oauth.md        (skipped, rule 1 matched) │
+│                                                                  │
+│ 3. specs/auth-oauth.md               (skipped, rule 1 matched) │
+└──────────────────────────────────────────────────────────────────┘
+
+Result:
+  ✓ Found: packages/auth-service/specs/auth-oauth.md
+  ✓ Creates: .agentic/openspec/changes/auth-oauth/
+  ✓ Tracks centrally, specs live with packages
+```
+
+</details>
 
 ### 2) Package spec directories
 
@@ -146,6 +184,151 @@ The monorepo benefit is parallelism:
 For dependency/rollout sequencing, see:
 - [/workflow-diagrams](/workflow-diagrams) (dependency graph)
 - [/prompting-guide](/prompting-guide) (dependency analysis prompt)
+
+<details>
+  <summary>Diagram: Monorepo workflow (multiple packages in parallel)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│       MONOREPO: Multi-Package Parallel Workflow              │
+└──────────────────────────────────────────────────────────────┘
+
+monorepo/
+├── agnostic-agent.yaml      ← Root config (multi-path specDirs)
+├── specs/                   ← Shared specs
+├── packages/
+│   ├── service-a/
+│   │   ├── specs/
+│   │   │   ├── auth-oauth.md        ← Package-specific spec
+│   │   │   └── logging-upgrade.md
+│   │   └── src/
+│   ├── service-b/
+│   │   ├── specs/
+│   │   │   ├── webhook-retry.md
+│   │   │   └── db-migration.md
+│   │   └── src/
+│   └── service-c/
+│       ├── specs/
+│       │   └── api-v2.md
+│       └── src/
+└── .agentic/
+    └── openspec/changes/    ← Centralized tracking
+        ├── auth-oauth/
+        ├── webhook-retry/
+        └── api-v2/
+
+WORKFLOW (PARALLEL):
+
+  Day 1: PLAN ALL FEATURES
+  ┌──────────────────────────────────────┐
+  │ agentic-agent openspec init "Auth"   │
+  │   --from packages/service-a/specs/.. │
+  │                                      │
+  │ agentic-agent openspec init "Webhook"│
+  │   --from packages/service-b/specs/.. │
+  │                                      │
+  │ agentic-agent openspec init "API"    │
+  │   --from packages/service-c/specs/.. │
+  └──────────────────────────────────────┘
+            ↓
+  Days 2-5: BUILD IN PARALLEL
+  ┌────────────────────────────────────────────────────┐
+  │ Team A (service-a):                               │
+  │   cd packages/service-a                           │
+  │   agentic-agent task claim <task-1>              │
+  │   [code] → task complete                          │
+  │                                                   │
+  │ Team B (service-b):                    PARALLEL   │
+  │   cd packages/service-b                           │
+  │   agentic-agent task claim <task-2>              │
+  │   [code] → task complete                          │
+  │                                                   │
+  │ Team C (service-c):                               │
+  │   cd packages/service-c                           │
+  │   agentic-agent task claim <task-3>              │
+  │   [code] → task complete                          │
+  └────────────────────────────────────────────────────┘
+            ↓
+  Day 6: INTEGRATE & TEST
+  ┌──────────────────────────────────────┐
+  │ Service A provides OAuth tokens      │
+  │   ↓                                  │
+  │ Service B & C consume tokens         │
+  │   ↓                                  │
+  │ Run integration tests                │
+  └──────────────────────────────────────┘
+            ↓
+  Day 7: VERIFY & RELEASE
+  ┌──────────────────────────────────────┐
+  │ agentic-agent openspec complete auth │
+  │ agentic-agent openspec complete ..   │
+  │ agentic-agent openspec archive auth  │
+  └──────────────────────────────────────┘
+            ↓
+        ✅ ALL DONE
+```
+
+</details>
+
+<details>
+  <summary>Diagram: Multi-service dependency graph (implementation order)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│       EXAMPLE: OAuth Feature Across 3 Services              │
+└──────────────────────────────────────────────────────────────┘
+
+INITIAL SPECS (in each package):
+┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+│   Auth Svc   │      │   API Svc    │      │   Web UI     │
+│              │      │              │      │              │
+│ OAuth        │      │ Token        │      │ Login Form   │
+│ Provider     │      │ Verification │      │ OAuth Buttons│
+│              │      │              │      │              │
+│ Provides:    │      │ Needs:       │      │ Needs:       │
+│ - POST /auth │      │ - OAuth      │      │ - OAuth      │
+│ - tokens     │      │   tokens     │      │   endpoints  │
+└──────────────┘      └──────────────┘      └──────────────┘
+
+DEPENDENCIES (Prompt #6 analysis):
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  Auth Svc (START HERE)                                      │
+│  ├─ Implement OAuth endpoints                               │
+│  ├─ Add token generation                                    │
+│  ├─ Tests pass ✓                                            │
+│  └─ Deploy to staging                                       │
+│           ↓                                                  │
+│  API Svc (WAIT FOR AUTH)                                    │
+│  ├─ Add token verification middleware                       │
+│  ├─ Call Auth Svc /verify endpoint                         │
+│  ├─ Tests pass ✓                                            │
+│  └─ Deploy to staging                                       │
+│           ↓                                                  │
+│  Web UI (LAST)                                              │
+│  ├─ Add login form with OAuth buttons                       │
+│  ├─ Call Auth Svc endpoints                                │
+│  ├─ Store tokens in localStorage                           │
+│  ├─ Tests pass ✓                                            │
+│  └─ Deploy                                                  │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+BLOCKERS & RISKS:
+┌──────────────────────────────────────────────────────────────┐
+│ ❌ If Auth Svc not ready                                    │
+│    → API Svc can mock /verify endpoint                      │
+│                                                              │
+│ ❌ If API Svc not ready                                     │
+│    → Web UI can call Auth Svc directly (temporary)          │
+│                                                              │
+│ ✅ Contract first                                           │
+│    → Agree API contracts before implementation              │
+│    → Mock endpoints until real service ready                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+</details>
 
 ## CLI Reference (Common)
 
