@@ -1,69 +1,102 @@
 ---
 id: lifecycle
-title: Lifecycle & Workflows
-description: Four workflows matching risk level. Every step calls MCP.
+title: Development Lifecycle
+description: Every initiative follows one governed flow, selected by risk level.
 ---
 
 import { SectionHeader, FlowStep, CalloutBox } from '@site/src/components/tom';
 
-<SectionHeader num="03" title="Lifecycle & Workflows" desc="Four workflows — quick, standard, full, hotfix — selected by risk level. Every agent step calls Platform or Component MCP before producing output." />
-
-<div className="fi">
+<SectionHeader
+  num="04"
+  title="Development Lifecycle"
+  desc="Agent sequence depends on risk level: quick for low/bug_fix, standard for medium, full for high/critical."
+/>
 
 ## Workflow Selection
 
-| Risk Level | Trigger | Workflow | Agents |
+| Workflow | Risk | Agent sequence | Summary |
 |---|---|---|---|
-| **Low** | Single-component, no contract changes | Quick | Developer → Verifier |
-| **Medium** | Multi-component or contract additions | Standard | Architect → Developer(s) → Verifier |
-| **High / Critical** | Cross-cutting, new contracts, or `guaripolo` flag | Full | Analyst → Architect → Developer(s) → Verifier |
-| **Any** | Production bug, revert needed | Hotfix | Developer → Verifier (expedited) |
-
-</div>
+| **Quick** | low · bug_fix | Developer → Verifier | Fastest path, no high-level spec |
+| **Standard** | medium · new feature | Architect → Developer → Verifier | No dedicated Analyst |
+| **Full** | high · critical | Analyst → Architect → Developer → Verifier | Guaripolo, schema migrations, live trading |
 
 <div className="fi">
 
-## Standard Workflow — Step by Step
-
 <FlowStep
-  role="Product Manager"
+  role="Analyst Agent"
   roleAccent="pm"
-  roleRepo="Platform Repo"
-  title="Initiative Brief"
-  desc="PM creates initiative in platform repo. Analyst agent (if full workflow) calls Platform MCP to load constitution and workflow template. Produces analyst.md with scope, affected components, and risk classification."
-/>
+  roleRepo="Loads analyst.md · full workflow only"
+  title="Discovery"
+  desc="Defines problem, evidence, affected components, and success metrics. Produces discovery.md."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Platform MCP `get_context_pack(intent)` and `get_template("discovery")`.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    Problem metric, real evidence, user stories, out-of-scope list, affected components, and success metrics must be complete before handoff.
+  </CalloutBox>
+</FlowStep>
 
 <FlowStep
-  role="Platform Architect"
+  role="Architect Agent"
   roleAccent="arch"
-  roleRepo="Specs Repo"
-  title="Feature Specification"
-  desc="Architect agent calls Platform MCP get_workflow(), get_contracts() for all affected components. Produces feature-spec.md: component changes, new contracts, ADRs. Architect reviews and approves Gate 2."
-/>
+  roleRepo="Loads architect.md · standard + full"
+  title="Feature Spec + Component Specs"
+  desc="Defines UX flow, domain responsibilities, NFRs, contract changes, and risk flags. Produces one feature-spec plus one component spec per affected component."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Platform MCP `get_context_pack(intent)` and Component MCP `get_contracts()`, `get_invariants()`, `get_decisions()` for each affected component.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    ACs in Given/When/Then, concrete NFRs, contract changes declared (or explicit none), rollback strategy, and critical flag when required.
+  </CalloutBox>
+</FlowStep>
 
 <FlowStep
-  role="Component Teams"
-  roleAccent="eng"
-  roleRepo="System Repo"
-  title="Implementation (parallel fan-out)"
-  desc="Developer agent per component. Each calls Component MCP get_invariants(), get_patterns() before writing implement-spec.md. All developers run in parallel. Gate 3 per component."
-/>
-
-<FlowStep
-  role="Domain Owners"
+  role="Developer Agent"
   roleAccent="comp"
-  roleRepo="Specs + System Repo"
-  title="Domain Review"
-  desc="Domain Owner reviews implement-spec.md. Checks Gate 3 checklist: invariants respected, patterns followed, no cross-domain side effects. Signs off before implementation begins."
-/>
+  roleRepo="Loads developer.md · all workflows · parallel per component"
+  title="Impl Spec + Tasks"
+  desc="Defines exact data model, code changes, edge cases, and observability. Produces impl-spec.md and tasks.yaml in component docs/specs/."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Component MCP `get_patterns()` and `get_decisions()` before implementation.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    Complete data model, endpoints/functions with errors, edge-case coverage, observability, rollout plan, and dependency-aware tasks.
+  </CalloutBox>
+</FlowStep>
 
 <FlowStep
   role="Verifier Agent"
-  roleAccent="arch"
-  roleRepo="Specs Repo"
-  title="Cross-component Verification"
-  desc="Verifier calls Platform MCP get_graph() to load the full spec dependency graph. Calls Component MCP for each component to validate contracts align. Produces verify.md with Gate 5 checklist."
+  roleAccent="gate"
+  roleRepo="Loads verifier.md · hard stop"
+  title="Verification + Sign-offs"
+  desc="Verifies every acceptance criterion with evidence. Produces verify.md. Merge is blocked until all checks pass."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Platform MCP `get_context_pack(intent)` to load definition-of-done by risk level.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    AC evidence, tests attached, observability confirmed, rollback tested, and required sign-offs. Critical changes require explicit HUMAN APPROVED entry.
+  </CalloutBox>
+</FlowStep>
+
+<FlowStep
+  role="Team / Domain Owner"
+  roleAccent="plat"
+  roleRepo="Owns post-merge knowledge updates"
+  title="Release + Knowledge Update"
+  desc="After merge, update graph/index.yaml and refresh component/platform knowledge so the next initiative starts from better context."
   isLast={true}
-/>
+>
+  <CalloutBox type="green" label="Post-release updates">
+    Update patterns, runbooks, constraints, constitution rules, contract versions, and graph links through PRs.
+  </CalloutBox>
+</FlowStep>
 
 </div>
+
+## Architect Fan-out Rule
+
+After `feature-spec.md` is approved, run one Developer agent per affected component in parallel. Verifier waits until all component tracks finish.

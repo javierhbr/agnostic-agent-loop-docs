@@ -6,9 +6,8 @@ slug: /
 description: A practical guide to Spec-Driven Development with two MCP servers, four Markdown agents, and zero overhead services.
 ---
 
-import { CalloutBox, VsCard, Badge } from '@site/src/components/tom';
+import { CalloutBox, VsCard } from '@site/src/components/tom';
 
-{/* Hero eyebrow */}
 <div style={{
   fontFamily: 'var(--tom-mono)',
   fontSize: '11px',
@@ -21,27 +20,25 @@ import { CalloutBox, VsCard, Badge } from '@site/src/components/tom';
   gap: '1rem',
 }}>
   <span style={{ display: 'block', width: '32px', height: '2px', background: 'var(--tom-rust)' }}/>
-  Target Operating Model · SDD + MCP · v3.0
+  Target Operating Model · SDD + MCP · v3.0 · February 2026
 </div>
 
-# Specify. *Validate.* Execute.
+# Software built as a *knowledge system*
 
-A practical guide to **Spec-Driven Development** with two MCP servers, four Markdown agents, and zero overhead services — the enterprise model for teams that need alignment, traceability, and zero tribal knowledge.
+A practical guide to **Spec-Driven Development** with two MCP servers, four Markdown agents, and zero overhead services.
 
 <CalloutBox type="amber" mono>
   "Nothing is implemented without a validated spec backed by governed context." — Core Principle, v3.0
 </CalloutBox>
 
----
+## Problem Statement
 
-<h4>00 — THE PROBLEM</h4>
+- **Speed vs. correctness:** AI agents can write code in seconds, but they invent context when specs are weak.
+- **Tribal knowledge does not scale:** contracts, invariants, and architecture decisions live in Slack and in people’s heads.
+- **Process overhead kills velocity:** heavyweight validator services get abandoned or bypassed.
 
-## Why SDD + MCP?
-
-Every team hits the same wall. Requirements live in Slack, decisions get lost in PR comments, AI agents invent context they don't have, and contract registries (as servers) add infrastructure that nobody maintains. Teams skip the process or drown in it.
-
-<CalloutBox type="navy" label="The answer:">
-  Two MCP servers that serve governed knowledge. Four Markdown agents that carry the process. Zero overhead services — gates live as checklists inside templates, not in TypeScript validators. If a methodology component doesn't change what the agent writes, it's eliminated.
+<CalloutBox type="navy" label="The answer">
+  Two MCP servers serve governed knowledge. Four Markdown agents carry the process. Gates live as checklists in templates, not in extra TypeScript services.
 </CalloutBox>
 
 <VsCard
@@ -56,39 +53,24 @@ Every team hits the same wall. Requirements live in Slack, decisions get lost in
     'Onboarding requires tribal knowledge',
   ]}
   goodItems={[
-    'Specs are the explicit, versioned source of truth',
+    'Specs are explicit, versioned source of truth',
     'Contracts are governed with full consumer lists',
     'Every decision is an ADR with an audit trail',
-    'Agents consume governed context — no invention',
-    'Gates block integration bugs before they happen',
-    'Context Packs enable fast, safe onboarding',
+    'Agents consume governed context, not guesses',
+    'Gates block integration bugs before release',
+    'Context Packs enable faster, safer onboarding',
   ]}
 />
 
----
+## What You’ll Find in This Guide
 
-## Core Principle
-
-> Your organisation is a **knowledge system**, not just a code system. Code is the output — specs, contracts, and decisions are the inputs that determine whether the code is right.
-
-The model has three non-negotiable rules:
-
-1. **Nothing is implemented without a spec.** Every change starts in `openclaw-specs/` or the component's own `docs/specs/` directory.
-2. **Agents always call MCP.** Platform MCP for constitution and contracts. Component MCP for domain invariants. Never read raw files directly.
-3. **Gates are sequential.** No agent moves to the next phase until its exit gate checklist is complete.
-
----
-
-## What's in this guide
-
-| Section | What you'll learn |
+| Section | Focus |
 |---|---|
-| [The Big Idea](/big-idea) | Knowledge system model, core principles |
-| [Tools & MCPs](/tools) | Platform MCP, Component MCP, Agent layer |
-| [Structure](/structure) | Two-repo model, file layout, context packs |
-| [Lifecycle](/lifecycle) | Four workflows, MCP interactions per step |
-| [Agents](/agents) | Analyst, Architect, Developer, Verifier |
-| [Exit Gates](/gates) | Five sequential gates with checklists |
-| [Prompts](/prompts) | Real example prompts by role |
-| [Roles](/roles) | Who owns what, accountability matrix |
-| [Scaling](/scaling) | 1-person startup → 6+ person full model |
+| [The Big Idea](/big-idea) | Knowledge-system model and methodology DNA |
+| [Tools & MCPs](/tools) | Platform MCP, Component MCP, and four agents |
+| [Repository Structure](/structure) | Two repos, two MCP types, zero overhead services |
+| [Development Lifecycle](/lifecycle) | Quick, standard, and full workflows with handoffs |
+| [The 5 Gates](/gates) | Non-negotiable checkpoints that block unsafe progress |
+| [Example Prompts](/prompts) | Real prompts by role and scenario |
+| [Roles & Responsibilities](/roles) | Ownership and accountability matrix |
+| [Scaling Guide](/scaling) | 1–2 people to 6+ team evolution |

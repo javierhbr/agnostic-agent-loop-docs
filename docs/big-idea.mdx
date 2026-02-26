@@ -4,85 +4,58 @@ title: The Big Idea
 description: Your organisation is a knowledge system, not just a code system.
 ---
 
-import { SectionHeader, VsCard, CalloutBox, ToolCard } from '@site/src/components/tom';
-import styles from '@site/src/components/tom/tom.module.css';
+import { SectionHeader, VsCard, CalloutBox } from '@site/src/components/tom';
 
-<SectionHeader num="00" title="The Big Idea" desc="Your organisation is a knowledge system, not just a code system. Code is the output — specs, contracts, and decisions are the inputs that determine whether the code is right." />
-
-<div className="fi">
-
-## The Knowledge System Model
-
-Most engineering orgs treat their codebase as the source of truth. They're wrong. The codebase is the *output* — the product of decisions made upstream in requirements, architecture choices, domain invariants, and integration contracts.
-
-When those upstream inputs are scattered across Slack threads, Jira comments, and engineers' heads, you get:
-
-- AI agents that invent plausible-sounding but incorrect context
-- Integration bugs that appear at the worst possible time
-- New engineers who take months to become productive
-- Architectural drift that compounds until a rewrite is required
-
-**SDD + MCP treats knowledge as a first-class engineering artifact.** Every decision is versioned. Every contract is governed. Every agent has a single, authoritative source to query.
-
-</div>
-
-<div className="fi">
+<SectionHeader
+  num="00"
+  title="The Big Idea"
+  desc="Your organisation is a knowledge system, not just a code system. Code is the output — specs, contracts, and decisions are the inputs that determine whether the code is right."
+/>
 
 <VsCard
-  badLabel="Knowledge in people's heads"
-  goodLabel="Knowledge as a governed system"
+  badLabel="Without SDD"
+  goodLabel="With SDD + MCP"
   badItems={[
-    'Requirements exist only in Slack',
-    'Architecture decisions fade from memory',
-    'Contracts break silently in production',
-    'AI agents hallucinate missing context',
-    'Onboarding takes 3–6 months',
-    'No audit trail for decisions',
+    'Teams interpret requirements differently',
+    'Service contracts break without warning',
+    'Decisions live in Slack and people\'s heads',
+    'AI agents invent context from the codebase',
+    'Rework after costly integration bugs',
+    'Onboarding requires tribal knowledge',
   ]}
   goodItems={[
-    'Requirements captured in versioned initiative specs',
-    'Every decision is a numbered ADR with rationale',
-    'Contracts list all consumers — breaking changes flagged',
-    'Agents query MCP — no hallucination, full traceability',
-    'Context Packs enable productive day-one onboarding',
-    'Every change links to spec, ADR, and gate checklist',
+    'Specs are explicit, versioned source of truth',
+    'Contracts are governed with full consumer lists',
+    'Every decision is an ADR with an audit trail',
+    'Agents consume governed context, no invention',
+    'Gates block integration bugs before they happen',
+    'Context Packs enable fast, safe onboarding',
   ]}
 />
 
-</div>
+## 00b — Why This Model: What We Took and What We Dropped
 
-<div className="fi">
-
-## The Three Laws
-
-<CalloutBox type="amber" label="Law 1 — Spec First">
-  **Nothing is implemented without a spec.** Implementation specs live in `docs/specs/` of the component repo. Feature specs live in `openclaw-specs/initiatives/`. The codebase never gets ahead of the spec layer.
+<CalloutBox type="amber" label="Selection rule">
+  If a methodology component does not change what the agent or engineer writes, it is removed.
 </CalloutBox>
 
-<CalloutBox type="teal" label="Law 2 — MCP Always">
-  **Agents always call MCP.** Platform MCP serves the constitution, workflow templates, and cross-cutting contracts. Component MCP serves domain invariants and local patterns. Agents never read raw spec files — they always go through the MCP interface.
-</CalloutBox>
+This model composes proven ideas from SDD, MCP, ADR practice, Agile/XP, Lean, BMAD, OpenSpec, and SpecKit.
+All process lives in Markdown files under version control and review. No process logic lives in extra infrastructure.
 
-<CalloutBox type="navy" label="Law 3 — Sequential Gates">
-  **Gates are sequential, not optional.** Analyst exits before Architect begins. Architect exits before Developer begins. Developer exits before Verifier begins. Each gate has a checklist that must be green before the next phase starts.
-</CalloutBox>
-
-</div>
-
-<div className="fi">
-
-## Why Markdown Agents, Not TypeScript Services
-
-Other methodology frameworks build TypeScript validators, contract registry APIs, and custom tooling. That infrastructure has a maintenance cost — and teams stop using it.
-
-SDD + MCP's overhead is exactly zero additional infrastructure:
-
-| Approach | Overhead | Adoption |
+| Source | What We Took | What We Dropped |
 |---|---|---|
-| TypeScript gate validators | CI config, npm packages, runtime errors | Brittle — teams route around it |
-| External contract registry APIs | Servers to host, APIs to version | Abandoned in 6 months |
-| **Markdown agents + MCP** | `.md` files in your repo | Zero — it's just files and prompts |
+| **SDD** | Spec-before-code, Given/When/Then ACs, embedded exit-gate checklists | Centralized spec registries and snapshot services |
+| **MCP** | Platform MCP for shared truth; Component MCP per component for local truth | Router MCP and extra domain/contract MCP split |
+| **ADR** | Decisions as first-class artifacts and merge blockers when unresolved | Separate ADR query services |
+| **Agile / XP** | Risk-proportional workflows and small handoff artifacts | Mandatory ceremony overhead |
+| **Lean** | Eliminate non-output-changing work; logic in files, not servers | Tooling that adds maintenance but no output quality |
+| **BMAD** | Four bounded roles, hard-stop handoffs, Architect fan-out for parallel dev | Orchestrator agent and persona naming |
+| **OpenSpec** | Mandatory traceability metadata, Spec Graph, source citation, versioned lifecycle | Dedicated spec versioning server |
+| **SpecKit** | Templates with embedded gates, Context Pack pinning, typed spec templates via MCP | Separate scaffolding CLI |
 
-Gates are checklist items inside Markdown templates. Agents are `.md` files in `.claude/agents/`. MCP servers read the spec directories you already have. **If a methodology component doesn't change what the agent writes, it's eliminated.**
+## Core Outcome
 
-</div>
+- Knowledge is governed and versioned.
+- Agent behavior is role-bounded and traceable.
+- Quality gates are enforced without extra services.
+- The system compounds learning after every release through updated specs, ADRs, and patterns.

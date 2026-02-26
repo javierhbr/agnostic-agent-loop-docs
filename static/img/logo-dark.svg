@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TOM logo dark">
+  <rect width="64" height="64" rx="12" fill="#16151a"/>
+  <rect x="6" y="6" width="52" height="52" rx="10" fill="#1d1c24" stroke="#2e2d3a" stroke-width="2"/>
+  <path d="M32 15L49 25V39L32 49L15 39V25Z" fill="#c47d0e" fill-opacity=".18" stroke="#c47d0e" stroke-width="2"/>
+  <path d="M32 22L42 28V36L32 42L22 36V28Z" fill="#9aa2d8" fill-opacity=".2" stroke="#9aa2d8" stroke-width="2"/>
+  <circle cx="32" cy="32" r="3.5" fill="#1a7a6d"/>
+</svg>

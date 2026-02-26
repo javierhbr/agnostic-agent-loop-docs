@@ -1,109 +1,72 @@
 ---
 id: gates
-title: Exit Gates
-description: Five sequential gates. No agent moves forward until its gate is green.
+title: The 5 Gates
+description: Non-negotiable checkpoints enforced at CLI, CI, PR, and agent levels.
 ---
 
 import { SectionHeader, GateCard, CalloutBox } from '@site/src/components/tom';
 import styles from '@site/src/components/tom/tom.module.css';
 
-<SectionHeader num="05" title="Exit Gates" desc="Five sequential gates. No agent moves forward until its gate checklist is complete. Gates are Markdown checklists — not TypeScript validators." />
+<SectionHeader
+  num="05"
+  title="The 5 Gates"
+  desc="If any gate fails, progress is blocked. No exceptions."
+/>
 
 <div className={`${styles.gatesGrid} fi`}>
 
 <GateCard
-  num="1"
-  title="Initiative Scope"
+  num="G1"
+  title="Context Completeness"
   checks={[
-    'Affected components identified',
-    'Risk level classified',
-    'Workflow selected',
-    'PM has approved scope',
-    'No orphan initiatives',
+    'All MCP sources cited with versions',
+    'Context Pack version pinned in spec',
+    'constitution.md exists and is non-empty',
   ]}
 />
 
 <GateCard
-  num="2"
-  title="Architecture"
+  num="G2"
+  title="Domain Validity"
   checks={[
-    'feature-spec.md complete',
-    'All new contracts declared',
-    'Breaking changes flagged',
-    'ADRs written for key decisions',
-    'Platform Architect approved',
-    'Integration Owner approved (if contracts changed)',
+    'No invariant violations',
+    'Domain ownership respected',
+    'No direct cross-domain database access',
   ]}
 />
 
 <GateCard
-  num="3"
-  title="Implementation Spec"
+  num="G3"
+  title="Integration Safety"
   checks={[
-    'implement-spec.md complete',
-    'All invariants checked via MCP',
-    'Approved patterns used',
-    'No cross-domain side effects',
-    'Domain Owner approved',
+    'All contract consumers identified',
+    'Compatibility plan for breaking changes',
+    'Dual-publish strategy defined',
   ]}
 />
 
 <GateCard
-  num="4"
-  title="Code Quality"
+  num="G4"
+  title="NFR Compliance"
   checks={[
-    'All tests passing',
-    'Contract implementation matches spec',
-    'Idempotency keys present (if payment/order)',
-    'No direct cross-component DB access',
-    'Error handling matches pattern',
+    'Logging, metrics, and tracing declared',
+    'PII handling specified',
+    'Performance targets set (p95)',
   ]}
 />
 
 <GateCard
-  num="5"
-  title="System Verification"
+  num="G5"
+  title="Ready to Implement"
   checks={[
-    'verify.md produced by Verifier agent',
-    'All component gates green',
-    'Cross-contract consistency verified',
-    'graph/index.yaml updated',
-    'Human sign-off (High/Critical only)',
+    'No open blocked_by ADRs',
+    'Spec is unambiguous',
+    'All acceptance criteria are testable',
   ]}
 />
 
 </div>
 
-<div className="fi" style={{marginTop: '1.5rem'}}>
-
-<CalloutBox type="red" label="Gate failure protocol">
-  **When a gate fails, the agent stops and produces a FAIL report** — not a partial output. The FAIL report includes: which checklist item failed, which invariant or policy was violated (with ID), and the suggested remediation. The agent does **not** attempt to work around the failure.
+<CalloutBox type="red" label="Failure rule">
+  If any gate fails, the system blocks progress until the failure is resolved. Enforcement happens through agent checklists and CI spec-link validation in both repos.
 </CalloutBox>
-
-</div>
-
-<div className="fi" style={{marginTop:'2rem'}}>
-
-## Gates in Markdown
-
-Gates are checklist items inside the agent's output template — not a separate service:
-
-```markdown
-## Gate 3 — Implementation Spec Exit
-
-### Checklist
-- [x] implement-spec.md covers all components in feature-spec
-- [x] Component MCP `get_invariants()` called — zero violations
-- [x] Component MCP `get_patterns()` called — only approved patterns used
-- [ ] **FAIL**: Cross-domain side effect detected — Cart writing to Checkout's Redis
-- [ ] Domain Owner review pending
-
-### FAIL Details
-**Invariant violated**: CART-INV-001
-**Rule**: Cart must not write to storage namespaces owned by other components
-**Proposed fix**: Checkout creates its own Redis namespace `checkout-sessions:*`
-```
-
-This is the full gate implementation. No TypeScript. No build step. No CI plugin.
-
-</div>

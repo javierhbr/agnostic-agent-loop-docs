@@ -6,9 +6,11 @@ description: Every role has a clear repo, clear ownership, and clear accountabil
 
 import { SectionHeader, RolesTable, CalloutBox } from '@site/src/components/tom';
 
-<SectionHeader num="07" title="Roles & Responsibilities" desc="Every role has a clear repo, clear ownership, and clear accountability. No overlap — no ambiguity about who decides what." />
-
-<div className="fi">
+<SectionHeader
+  num="07"
+  title="Roles & Responsibilities"
+  desc="No overlap. No ambiguity about who decides what."
+/>
 
 <RolesTable
   rows={[
@@ -16,84 +18,47 @@ import { SectionHeader, RolesTable, CalloutBox } from '@site/src/components/tom'
       role: 'Product Manager',
       repo: 'Platform Repo',
       owns: 'Initiative definition, business goals, UX intent',
-      accountable: 'Initiative (Epic), success criteria',
+      accountable: 'Initiative (Epic) and success criteria',
     },
     {
       role: 'Platform Architect',
       repo: 'Specs Repo',
-      owns: 'constitution/, templates/, workflows/, graph/index.yaml — the governed inputs that Platform MCP serves',
-      accountable: '"What the system must do" across all components · approves Architect agent output',
+      owns: 'constitution/, templates/, workflows/, graph/index.yaml served by Platform MCP',
+      accountable: 'What the system must do across components; approval of Architect output',
     },
     {
       role: 'Domain Owner',
       repo: 'Specs + System Repo',
-      owns: 'components/{name}/specs/ — invariants, contracts, patterns, ADRs served by Component MCP',
-      accountable: 'Domain correctness of all specs touching their component · approves Developer agent output',
+      owns: 'components/{name}/specs/ invariants, contracts, patterns, ADRs served by Component MCP',
+      accountable: 'Domain correctness for all specs touching their component; approval of Developer output',
     },
     {
       role: 'Integration Owner',
       repo: 'Specs Repo',
-      owns: 'contracts/ inside each component spec — get_contracts() on Component MCP returns these',
-      accountable: 'Approves contract changes declared in Architect exit gate · verifies no breaking changes',
+      owns: 'Contract definitions returned by get_contracts() in component MCPs',
+      accountable: 'Approval of contract changes and breaking-change safety',
     },
     {
       role: 'Component Team',
       repo: 'System Repo',
       owns: 'Implementation specs (docs/specs/), code, tests, local ADRs',
-      accountable: '"How the system works locally" — Developer + Verifier agents',
+      accountable: 'How the system works locally (Developer + Verifier execution)',
     },
     {
       role: 'ADR Owner',
       repo: 'Platform or Component',
-      owns: 'Technical decisions — global or local scope',
+      owns: 'Technical decisions in local or global scope',
       accountable: 'Resolving ambiguity before implementation proceeds',
     },
     {
       role: 'AI Agents',
       repo: 'analyst · architect · developer · verifier',
-      owns: 'Discovery, specification, implementation, and verification — loaded from .claude/agents/ as Markdown',
-      accountable: 'Must call Platform + Component MCPs · self-check exit gates · produce traceable outputs per risk level',
+      owns: 'Discovery, specification, implementation, and verification as Markdown agents',
+      accountable: 'MCP calls, exit-gate self-checks, and traceable outputs per risk level',
     },
   ]}
 />
 
-</div>
-
-<div className="fi" style={{ marginTop: '2.5rem' }}>
-
-## Decision Authority Matrix
-
-<CalloutBox type="amber" label="Key principle">
-  When two roles disagree, the role whose **repo** owns the artifact has final authority. Platform Architect owns the constitution — not the Domain Owner. Domain Owner owns component invariants — not the Platform Architect.
+<CalloutBox type="amber" label="Responsibility boundary">
+  Final authority follows artifact ownership: the role that owns the repository artifact owns the decision.
 </CalloutBox>
-
-| Decision type | Authority |
-|---|---|
-| Platform-wide policy change | Platform Architect |
-| New cross-cutting contract | Integration Owner + Platform Architect |
-| Component invariant update | Domain Owner |
-| Risk level classification | Platform Architect |
-| Agent workflow modification | Platform Architect |
-| Local ADR (component scope) | Component Team + Domain Owner |
-| Global ADR (platform scope) | Platform Architect |
-| Implementation approach (in-spec) | Component Team |
-| Implementation approach (out-of-spec) | Domain Owner must approve first |
-
-</div>
-
-<div className="fi" style={{ marginTop: '2.5rem' }}>
-
-## Approval Gates by Role
-
-When an agent produces output, it goes through human review at specific points:
-
-| Agent output | Reviewer | Gate |
-|---|---|---|
-| analyst.md — initiative brief | Product Manager | Gate 1 |
-| feature-spec.md — architecture | Platform Architect | Gate 2 |
-| Contract changes in feature-spec | Integration Owner | Gate 2 |
-| implement-spec.md — component plan | Domain Owner | Gate 3 |
-| verify.md — verification report | Domain Owner (spot-check) | Gate 5 |
-| Critical/High risk — final sign-off | Platform Architect | Gate 5 |
-
-</div>

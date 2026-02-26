@@ -7,7 +7,11 @@ description: Start with one repo and add structure only when the team needs it.
 import { SectionHeader, ScaleCard, D1Phase, CalloutBox } from '@site/src/components/tom';
 import styles from '@site/src/components/tom/tom.module.css';
 
-<SectionHeader num="08" title="Scaling Guide" desc="Start with one repo and add structure only when the team needs it. The two-MCP model and four agents never change — only the physical organisation of content does." />
+<SectionHeader
+  num="08"
+  title="Scaling Guide"
+  desc="The two-MCP model and four agents stay constant. Only physical organization and governance strictness evolve."
+/>
 
 <div className={`${styles.scaleGrid} fi`}>
 
@@ -15,11 +19,11 @@ import styles from '@site/src/components/tom/tom.module.css';
   stage="early"
   title="Early Stage"
   teams="1–2 people"
-  desc="One repo. Platform MCP reads a single openclaw-specs/ directory. Component MCP reads the one monorepo component you have. Quick workflow only."
+  desc="One repo. Platform MCP reads a single openclaw-specs/ directory. Component MCP reads one monorepo component. Quick workflow only."
   items={[
-    'Single repo: specs + code together',
-    'Platform MCP reads local directory',
-    'One component MCP for the whole system',
+    'Single repo with specs and code together',
+    'Platform MCP reads local specs directory',
+    'One component MCP instance for the whole system',
     'Quick workflow only (developer → verifier)',
   ]}
 />
@@ -28,11 +32,11 @@ import styles from '@site/src/components/tom/tom.module.css';
   stage="growing"
   title="Growing Team"
   teams="3–6 people"
-  desc="Split repos. openclaw-specs/ becomes its own repo so product and engineering can PR separately. One component MCP instance per bounded context."
+  desc="Split repos so product and engineering can PR independently. Add component MCP instances per bounded context."
   items={[
-    'openclaw-specs/ repo split from system repo',
-    'Component MCP instances per major component',
-    'Standard workflow introduced for new features',
+    'openclaw-specs/ split from system repo',
+    'Component MCP per major component',
+    'Standard workflow for medium/new features',
     'agents/ symlinked into .claude/ from specs repo',
   ]}
 />
@@ -41,7 +45,7 @@ import styles from '@site/src/components/tom/tom.module.css';
   stage="full"
   title="Full Model"
   teams="6+ people"
-  desc="Full two-repo model as described in this document. Full workflow for high/critical. Human approval gates enforced at Verifier. Spec graph fully linked."
+  desc="Full two-repo model. Full workflow for high/critical. Human approval enforced at verification. Spec graph fully linked."
   items={[
     'Full workflow for high/critical risk',
     'Analyst agent activated for major initiatives',
@@ -52,11 +56,9 @@ import styles from '@site/src/components/tom/tom.module.css';
 
 </div>
 
-<div className="fi" style={{ marginTop: '3rem' }}>
-
 ## Ready to start on Day 1?
 
-Four phases. MCP servers first — then your first initiative — then parallel fan-out — then harden.
+Four phases: foundation, first initiative, standard flow, harden.
 
 <div className={styles.d1Grid}>
 
@@ -75,20 +77,20 @@ Four phases. MCP servers first — then your first initiative — then parallel 
   label="Phase 2 · First Initiative"
   items={[
     'Select one low-risk pilot feature',
-    'Run quick workflow: developer.md only',
+    'Run quick workflow (developer.md only)',
     'Developer calls Component MCP',
     'Verifier produces verify.md',
-    'Validate gate checklist end-to-end',
+    'Validate gate checklist end to end',
   ]}
 />
 
 <D1Phase
   label="Phase 3 · Standard Flow"
   items={[
-    'Run standard workflow for a medium feature',
+    'Run standard workflow for medium feature',
     'Architect produces feature-spec.md',
-    'Fan out: developer.md per component (parallel)',
-    'Verifier waits for all developers done',
+    'Fan out developer agents per component in parallel',
+    'Verifier waits for all component tracks',
     'Update graph/index.yaml post-merge',
   ]}
 />
@@ -96,21 +98,15 @@ Four phases. MCP servers first — then your first initiative — then parallel 
 <D1Phase
   label="Phase 4 · Harden"
   items={[
-    'Add full workflow for critical changes',
-    'Analyst activated for Guaripolo/live flag',
-    'Human approval gate in verifier.md',
-    'CI enforces verify.md sign-off before merge',
+    'Enable full workflow for critical changes',
+    'Activate Analyst for Guaripolo/live flag cases',
+    'Require human approval in verifier.md',
+    'Enforce verify.md sign-off in CI before merge',
   ]}
 />
 
 </div>
 
-</div>
-
-<div className="fi" style={{ marginTop: '3rem' }}>
-
 <CalloutBox type="amber">
-  The two-MCP model and four agents **never change** as you scale. What changes is the physical organization of content across repos and the strictness of gate enforcement. The model adapts to the team — the team doesn't adapt to the model.
+  The model scales by adding governance discipline, not by adding process services.
 </CalloutBox>
-
-</div>

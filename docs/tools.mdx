@@ -1,145 +1,120 @@
 ---
 id: tools
 title: Tools & MCPs
-description: Two MCP servers, four agents, zero overhead infrastructure.
+description: Two MCP servers, four agents, zero overhead services.
 ---
 
-import { SectionHeader, ToolCard, CalloutBox, LayerStack } from '@site/src/components/tom';
+import { SectionHeader, ToolCard, LayerStack, CalloutBox } from '@site/src/components/tom';
 import styles from '@site/src/components/tom/tom.module.css';
 
-<SectionHeader num="01" title="Tools & MCPs" desc="Two MCP servers that serve governed knowledge. Four Markdown agents that carry the process. Zero overhead services." />
+<SectionHeader
+  num="01"
+  title="Two MCPs, Four Agents"
+  desc="Two MCP server types carry governed knowledge. Four Markdown agents carry the process. No routers, no gate validators, no extra services."
+/>
 
 <div className={`${styles.toolsGrid} fi`}>
 
 <ToolCard
   accent="rust"
   badge="Platform MCP"
-  title="Platform MCP"
-  layer="Cross-cutting · Governed by Platform Architect"
-  desc="Serves the constitution, workflow templates, and cross-cutting contracts. Any agent or engineer can call it to get authoritative platform context."
+  icon="⬟"
+  title="Platform Intelligence"
+  layer="1 instance per org · reads openclaw-specs/ · 4 tools only"
+  desc="Platform-level source of truth for context packs, templates with embedded gates, agent definitions, and workflow config."
   items={[
-    'get_constitution() — policies and principles',
-    'get_workflow(name) — agent workflow templates',
-    'get_contracts(component) — integration contracts',
-    'get_graph() — full spec dependency graph',
-    'validate_gate(gate, checklist) — gate evaluation',
+    'get_context_pack(intent) → risk_level + policies + workflow',
+    'get_template(name) → template with embedded exit gate',
+    'get_agent(name) → analyst / architect / developer / verifier',
+    'get_workflow(risk_level) → which agent sequence to run',
   ]}
 />
 
 <ToolCard
   accent="teal"
   badge="Component MCP"
-  title="Component MCP"
-  layer="Per-component · Governed by Domain Owner"
-  desc="One instance per bounded context. Serves domain invariants, local patterns, and component-specific ADRs. Developer and Verifier agents call this first."
+  icon="◈"
+  title="Component Knowledge"
+  layer="N instances · same image · per-component configuration"
+  desc="Local truth for a component: contracts, invariants, patterns, and decisions."
   items={[
-    'get_invariants() — domain rules that cannot be broken',
-    'get_patterns() — approved implementation patterns',
-    'get_adrs() — architectural decisions for this component',
-    'get_contracts() — contracts this component publishes',
-    'check_invariant(rule, proposal) — violation detection',
+    'get_contracts() → topics, endpoints, event schemas',
+    'get_invariants() → immutable business rules',
+    'get_patterns() → approved implementation patterns',
+    'get_decisions() → ADRs and technical history',
   ]}
 />
 
 <ToolCard
   accent="navy"
-  badge="Agent Layer"
-  title="Four Agents"
-  layer="Markdown files in .claude/agents/"
-  desc="Analyst, Architect, Developer, Verifier. Each is a Markdown file with a system prompt. They never share context — each reads from MCP fresh."
+  badge="4 Agents"
+  icon="▤"
+  title="Development Workflow"
+  layer="Markdown files in .claude/agents/ · loaded on demand"
+  desc="Gates are inside agent checklists. Agents self-verify before handoff."
   items={[
-    'analyst.md — initiative discovery and scoping',
-    'architect.md — feature spec and contract design',
-    'developer.md — implementation spec and code',
-    'verifier.md — multi-component gate validation',
+    'analyst.md → discovery and affected component mapping (full workflow)',
+    'architect.md → feature spec + component specs per domain',
+    'developer.md → impl spec + tasks + code (parallel per component)',
+    'verifier.md → AC evidence, sign-offs, merge hard stop',
   ]}
 />
 
 </div>
 
-<div className="fi" style={{ marginTop: '3rem' }}>
-
-## The Knowledge Layer Stack
+<SectionHeader
+  num="02"
+  title="How the Layers Flow"
+  desc="Knowledge at the top feeds specs in the middle, which drive code at the bottom."
+/>
 
 <LayerStack
   layers={[
     {
       bg: 'k',
       label: 'Knowledge Layer',
-      sub: 'openclaw-specs/ repo',
+      sub: 'MCP servers · governed context',
       pills: [
-        { text: 'constitution/', type: 'k' },
-        { text: 'initiatives/', type: 'k' },
-        { text: 'contracts/', type: 'k' },
-        { text: 'agents/', type: 'k' },
-        { text: 'graph/index.yaml', type: 'k' },
+        { text: 'Platform Policies', type: 'k' },
+        { text: 'Domain Models', type: 'k' },
+        { text: 'Integration Contracts', type: 'k' },
+        { text: 'Component Context', type: 'k' },
       ],
     },
     {
       bg: 's',
-      label: 'Platform MCP',
-      sub: 'serves cross-cutting context',
+      label: 'Spec Layer',
+      sub: 'agents · two repos',
       pills: [
-        { text: 'get_constitution()', type: 's' },
-        { text: 'get_workflow()', type: 's' },
-        { text: 'get_contracts()', type: 's' },
-        { text: 'get_graph()', type: 's' },
+        { text: 'Platform Specs', type: 's' },
+        { text: 'Component Specs', type: 's' },
+        { text: 'Contract Specs', type: 's' },
+        { text: 'ADRs', type: 's' },
       ],
     },
     {
       bg: 'c',
-      label: 'Component MCP',
-      sub: 'per bounded context',
+      label: 'Code Layer',
+      sub: 'implementation',
       pills: [
-        { text: 'get_invariants()', type: 'c' },
-        { text: 'get_patterns()', type: 'c' },
-        { text: 'get_adrs()', type: 'c' },
-        { text: 'check_invariant()', type: 'c' },
+        { text: 'Services', type: 'c' },
+        { text: 'APIs', type: 'c' },
+        { text: 'Infrastructure', type: 'c' },
       ],
     },
     {
       bg: 'o',
-      label: 'Agent Layer',
-      sub: '.claude/agents/ — Markdown files',
+      label: 'Observability',
+      sub: 'runtime signals',
       pills: [
-        { text: 'analyst', type: 'o' },
-        { text: 'architect', type: 'o' },
-        { text: 'developer', type: 'o' },
-        { text: 'verifier', type: 'o' },
+        { text: 'Logs', type: 'o' },
+        { text: 'Metrics', type: 'o' },
+        { text: 'Traces', type: 'o' },
       ],
     },
   ]}
 />
 
-</div>
-
-<div className="fi" style={{ marginTop: '3rem' }}>
-
-## MCP vs. Direct File Access
-
-<CalloutBox type="red" label="Never do this:">
-
-```bash
-# ❌ Agent reads spec files directly
-cat openclaw-specs/constitution/policies.md
-cat components/cart/invariants.yaml
-```
-
-This bypasses governance. Files can be incomplete, the agent doesn't get structured responses, and there's no audit trail.
-
+<CalloutBox type="teal" label="Dependency rule">
+  Context Pack is assembled before spec writing. Execution happens only against approved specs, and observability feeds back into the knowledge layer for the next initiative.
 </CalloutBox>
-
-<CalloutBox type="teal" label="Always do this:">
-
-```bash
-# ✅ Agent calls MCP
-platform_mcp.get_constitution()
-component_mcp.get_invariants("cart")
-component_mcp.check_invariant("CART-INV-001", proposal)
-```
-
-MCP validates the call, returns structured data, logs the access, and can return computed results like invariant violation checks.
-
-</CalloutBox>
-
-</div>

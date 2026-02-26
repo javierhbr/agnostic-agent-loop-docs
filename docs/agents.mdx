@@ -1,13 +1,17 @@
 ---
 id: agents
 title: The Four Agents
-description: Analyst, Architect, Developer, Verifier — each a Markdown file with a clear mandate.
+description: Analyst, Architect, Developer, Verifier — each a Markdown file with a bounded role and explicit exit gate.
 ---
 
 import { SectionHeader, ToolCard, CalloutBox } from '@site/src/components/tom';
 import styles from '@site/src/components/tom/tom.module.css';
 
-<SectionHeader num="04" title="The Four Agents" desc="Each agent is a Markdown file in .claude/agents/. They are loaded as sub-agents in Claude Code. They never share context — each session starts fresh from MCP." />
+<SectionHeader
+  num="01b"
+  title="The Four Agents"
+  desc="Four Markdown agents define the process. Each role is bounded, each handoff has an exit gate, and each step is grounded in MCP context."
+/>
 
 <div className={`${styles.toolsGrid} fi`}>
 
@@ -15,72 +19,64 @@ import styles from '@site/src/components/tom/tom.module.css';
   accent="rust"
   badge="Analyst"
   title="analyst.md"
-  layer="Full workflow only · called by PM or Architect"
-  desc="Scopes initiatives before any specification work begins. Prevents over-engineering by forcing explicit boundary definition."
+  layer="Full workflow only · high/critical"
+  desc="Discovery role. Defines problem, evidence, affected components, and success metrics before architecture begins."
   items={[
-    'Calls get_constitution() to check initiative policies',
-    'Identifies affected bounded contexts',
-    'Classifies risk level (low/medium/high/critical)',
-    'Recommends workflow (quick/standard/full)',
-    'Produces analyst.md — input to Architect',
-  ]}
-/>
-
-<ToolCard
-  accent="teal"
-  badge="Architect"
-  title="architect.md"
-  layer="Standard + Full workflows"
-  desc="Designs the cross-component solution. The only agent allowed to propose new contracts or modify platform-wide policies."
-  items={[
-    'Calls get_workflow() and get_contracts() from Platform MCP',
-    'Produces feature-spec.md with component changes',
-    'Declares new contracts — triggers Integration Owner review',
-    'Creates ADRs for significant decisions',
-    'Self-checks Gate 2 before handing off',
+    'Loads context with Platform MCP get_context_pack(intent)',
+    'Fetches template with get_template("discovery")',
+    'Produces discovery.md for Architect handoff',
+    'Must complete analyst exit gate before handoff',
   ]}
 />
 
 <ToolCard
   accent="navy"
-  badge="Developer"
-  title="developer.md"
-  layer="All workflows · one instance per component"
-  desc="Implements within a single bounded context. Calls Component MCP before writing a single line of spec. Never crosses component boundaries."
+  badge="Architect"
+  title="architect.md"
+  layer="Standard + Full workflows"
+  desc="Specification role. Produces feature-spec and component specs, with explicit contracts, NFRs, and risk flags."
   items={[
-    'Calls get_invariants() — reads every invariant before starting',
-    'Calls get_patterns() — uses only approved patterns',
-    'Writes implement-spec.md for Domain Owner review',
-    'Writes code that passes Gate 3 and Gate 4',
-    'Never reads another component\'s spec directly',
+    'Calls get_context_pack(intent) from Platform MCP',
+    'Calls get_contracts(), get_invariants(), get_decisions() per component',
+    'Produces one feature-spec.md plus component-spec.md per domain',
+    'Declares contract changes and critical-risk flags explicitly',
   ]}
 />
-
-</div>
-
-<div className="fi" style={{marginTop:'1.5rem'}}>
 
 <ToolCard
   accent="teal"
-  badge="Verifier"
-  title="verifier.md"
-  layer="All workflows · runs last · may require human sign-off"
-  desc="The only agent with a cross-component view. Loads the full spec graph and verifies that all component outputs are consistent."
+  badge="Developer"
+  title="developer.md"
+  layer="All workflows · one run per component"
+  desc="Implementation role. Produces implementation plan and executes code in a single component scope."
   items={[
-    'Calls get_graph() to load the full spec dependency graph',
-    'Calls Component MCP for each affected component',
-    'Checks all contract interactions are implemented correctly',
-    'Produces verify.md with Gate 5 checklist',
-    'For High/Critical risk: flags for human approval before merge',
+    'Calls get_patterns() for approved implementation patterns',
+    'Calls get_decisions() to avoid contradicting ADRs',
+    'Produces impl-spec.md + tasks.yaml in docs/specs/',
+    'Runs in parallel across components after Architect fan-out',
   ]}
 />
 
 </div>
 
-<div className="fi" style={{marginTop:'2.5rem'}}>
+<div className="fi" style={{marginTop: '1.5rem'}}>
 
-<CalloutBox type="amber" label="Agent isolation rule">
-  **No agent reads the output of another agent directly.** The Architect does not read analyst.md as a file — it reads the initiative from Platform MCP. The Developer does not read feature-spec.md as a file — it reads the relevant component section from Platform MCP. This ensures MCP remains the single source of truth.
-</CalloutBox>
+<ToolCard
+  accent="green"
+  badge="Verifier"
+  title="verifier.md"
+  layer="All workflows · hard stop before merge"
+  desc="Verification role. Confirms acceptance criteria with evidence and enforces sign-off policy by risk level."
+  items={[
+    'Loads DoD from Platform MCP get_context_pack(intent)',
+    'Produces verify.md with pass/fail evidence per AC',
+    'Blocks merge until all checks are complete',
+    'Requires explicit HUMAN APPROVED record for critical changes',
+  ]}
+/>
 
 </div>
+
+<CalloutBox type="amber" label="Handoff contract">
+  An agent never starts until the previous agent completes its exit gate. Quality is enforced at transitions, not after integration.
+</CalloutBox>
