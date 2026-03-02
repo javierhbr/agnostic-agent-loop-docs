@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
         'core-concepts/tools',
         'core-concepts/structure',
         'core-concepts/usage-levels',
+        'core-concepts/layered-context',
       ],
     },
     {

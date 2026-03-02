@@ -13,6 +13,7 @@ const config: Config = {
 
   organizationName: 'your-org',
   projectName: 'agenticagent',
+  deploymentBranch: 'gh-pages',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -73,6 +74,7 @@ const config: Config = {
             { to: '/tools', label: 'Tools & MCPs' },
             { to: '/structure', label: 'Repository Structure' },
             { to: '/usage-levels', label: 'Usage Levels' },
+            { to: '/layered-context', label: '3-Tier Layered Context' },
           ],
         },
         {
