@@ -8,11 +8,11 @@ const config: Config = {
   tagline: 'Spec-Driven Development',
   favicon: 'img/favicon.ico',
 
-  url: 'https://your-org.github.io',
-  baseUrl: '/',
+  url: 'https://javierhbr.github.io',
+  baseUrl: '/agnostic-agent-loop-docs/',
 
-  organizationName: 'your-org',
-  projectName: 'agenticagent',
+  organizationName: 'javierhbr',
+  projectName: 'agnostic-agent-loop-docs',
   deploymentBranch: 'gh-pages',
 
   onBrokenLinks: 'throw',
@@ -35,7 +35,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: '/',           // Serve docs at site root
-          editUrl: 'https://github.com/your-org/tom-docs/edit/main/',
+          editUrl: 'https://github.com/javierhbr/agnostic-agent-loop-docs/edit/main/',
           showLastUpdateTime: true,
           showLastUpdateAuthor: false,
           breadcrumbs: true,
