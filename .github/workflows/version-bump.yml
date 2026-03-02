@@ -1,13 +1,21 @@
 name: Version Bump
 
 on:
+  push:
+    branches: ["main"]
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: "npm version <patch|minor|major>"
+        required: false
+        default: patch
 
 permissions:
   contents: write
 
 jobs:
   bump:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,13 +29,19 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
-      - name: Bump patch version
+      - name: Bump version
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          npm version patch -m "chore: bump version to %s"
+          RELEASE_TYPE="${{ github.event.inputs.release_type || 'patch' }}"
+          npm version "$RELEASE_TYPE" -m "chore: bump version to %s"
 
       - name: Push changes and tags
         env:
