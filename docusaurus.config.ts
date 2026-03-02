@@ -182,7 +182,7 @@ const config: Config = {
         {
           title: 'Resources',
           items: [
-            { label: 'GitHub', href: 'https://github.com/your-org/tom-docs' },
+            { label: 'GitHub', href: 'https://github.com/javierhbr/agnostic-agent-loop' },
           ],
         },
       ],
