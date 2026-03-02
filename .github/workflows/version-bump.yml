@@ -1,22 +1,33 @@
 name: Version Bump
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
     inputs:
       release_type:
         description: "npm version <patch|minor|major>"
         required: false
         default: patch
+  workflow_run:
+    workflows: ["Deploy Docusaurus to GitHub Pages"]
+    types: [completed]
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   bump:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    concurrency:
+      group: version-bump
+      cancel-in-progress: false
+    if: >
+      (github.event_name == 'workflow_dispatch')
+      || (github.event_name == 'workflow_run'
+          && github.event.workflow_run.conclusion == 'success'
+          && github.event.workflow_run.head_commit.author.name != 'github-actions[bot]'
+          && github.event.workflow_run.head_commit.author.username != 'github-actions[bot]'
+          && !contains(github.event.workflow_run.head_commit.message, 'chore: bump version'))
     steps:
       - name: Checkout
         uses: actions/checkout@v4
