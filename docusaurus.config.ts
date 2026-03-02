@@ -2,6 +2,8 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { ThemeConfig } from '@docusaurus/preset-classic';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pkg = require('./package.json');
 
 const config: Config = {
   title: 'AgenticAgent + SDD + MCP',
@@ -185,7 +187,7 @@ const config: Config = {
         },
       ],
       copyright:
-        '"Software is no longer just built — it is specified, validated, and executed as a system of knowledge." — AgenticAgent v3.0',
+        `"Software is no longer just built — it is specified, validated, and executed as a system of knowledge." — AgenticAgent v${pkg.version}`,
     },
 
     // ── Syntax highlighting ─────────────────────────────
