@@ -1,0 +1,63 @@
+---
+title: Configuration
+slug: /agentic-agent-cli/configuration
+description: Configure spec discovery, context dirs, OpenSpec lifecycle paths, and validation behavior.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="14b"
+  title="Configuration"
+  desc="The CLI reads agnostic-agent.yaml from the repo root. This file defines where specs live and how validation behaves."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  Reference. Use this when you need to set paths, specDirs, or validation modes.
+</CalloutBox>
+
+## Config file location
+
+By default, the CLI reads `agnostic-agent.yaml` from the current working directory (created by `agentic-agent init`).
+
+## Example: baseline config
+
+```yaml title="agnostic-agent.yaml (example)"
+project:
+  name: "My Project"
+  version: 0.1.0
+  roots:
+    - .
+
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
+
+paths:
+  specDirs:
+    - .specify/specs     # Spec Kit
+    - openspec/specs     # OpenSpec
+    - .agentic/spec      # Native fallback
+  contextDirs:
+    - .agentic/context
+  prdOutputPath: .agentic/tasks/
+  progressTextPath: .agentic/progress.txt
+  progressYAMLPath: .agentic/progress.yaml
+  openSpecDir: .agentic/openspec/changes
+  archiveDir: .agentic/archive/
+
+workflow:
+  validators:
+    - context-check
+    - task-scope
+    - browser-verification
+  validate_specs_on_claim: true
+  spec_validation_mode: "warn"   # "warn" | "block" | "silent"
+```
+
+## specDirs (priority order)
+
+When a task references a spec like `auth/spec.md`, the resolver searches each `specDirs` entry in order and uses the first match.
+
+If you are in a monorepo and want specs to live with packages, see [/monorepo-openspec](/monorepo-openspec).

@@ -1,5 +1,4 @@
 ---
-id: small-projects
 title: Small Projects
 slug: /small-projects
 description: How to use OpenSpec + tasks with minimal ceremony for teams of 1-3.
@@ -207,6 +206,93 @@ cd checkout-service/
 agentic-agent openspec init "Guest checkout flow" --from ../platform-specs/guest-checkout/spec.md
 ```
 
+## Pattern: The "Light SDD" Workflow
+
+For small teams working on a quick multi-service feature:
+
+```text
+┌─────────────────────────────────────┐
+│  1. Write 1-page platform spec      │
+│     (if multi-service)              │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│  2. Each team: openspec init        │
+│     + simple proposal + tasks       │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│  3. Implement tasks in parallel     │
+│     (no gates, just get it done)    │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│  4. Quick verification              │
+│     "Did we build what was asked?"  │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│  5. Archive & move to next feature  │
+└─────────────────────────────────────┘
+```
+
+## Real Example: Small Team Adding Search
+
+**Team:** 2 developers |
+**Feature:** Add search to product catalog |
+**Risk:** Low (single service) |
+**Timeline:** 1 week
+
+### Day 1: Write spec and tasks
+
+```bash
+agentic-agent openspec init "Product Search" --from requirements.md
+```
+
+### Days 2-6: Build
+
+```bash
+# Dev 1 works on backend
+agentic-agent task claim backend-elasticsearch
+# ... implement ...
+agentic-agent task complete backend-elasticsearch
+
+# Dev 2 works on frontend in parallel
+agentic-agent task claim frontend-search-box
+# ... implement ...
+agentic-agent task complete frontend-search-box
+```
+
+### Day 7: Finish and deploy
+
+```bash
+agentic-agent openspec complete product-search
+agentic-agent openspec archive product-search
+```
+
+## CLI Shortcuts for Small Projects
+
+### Commands to skip (overkill for small projects)
+
+```bash
+agentic-agent specify start ...      # full SDD only
+agentic-agent platform init ...      # only if multi-service
+agentic-agent specify adr create ... # only if blocking decision
+agentic-agent specify gate-check ... # only if high-risk
+```
+
+### Commands to use
+
+```bash
+agentic-agent openspec init <name>   # Create spec + tasks
+agentic-agent task list              # See all tasks
+agentic-agent task claim <id>        # Start working
+agentic-agent task complete <id>     # Mark done
+agentic-agent openspec status <id>   # Check progress
+agentic-agent openspec complete <id> # Finish feature
+agentic-agent openspec archive <id>  # Clean up
+```
+
 ## When to Upgrade (Stop Being "Small")
 
 Upgrade to Platform or SDD Full if any of these become true:
@@ -215,6 +301,8 @@ Upgrade to Platform or SDD Full if any of these become true:
 - The task graph grows: more than ~10 tasks or circular dependencies.
 - Cross-team ownership: multiple teams own different services.
 - Blocking decisions exist: you need ADRs to proceed safely.
+
+Then move to Platform level (skip Assess phase or keep it lightweight) or SDD Full with all 5 phases (if critical risk).
 
 ## Templates (Copy/Paste)
 
@@ -283,6 +371,49 @@ Use it when:
 For a prompt-oriented workflow, see [/prompting-guide](/prompting-guide).
 
 </details>
+
+## Small Project Decision Tree
+
+```text
+What are you building?
+
+├─ Bug fix or small refactor?
+│  └─ Just use: agentic-agent task create + task complete
+│     (No spec needed)
+│
+├─ New feature (1 service, 1-2 weeks)?
+│  └─ Use: agentic-agent openspec init
+│     └─ Write: 1-paragraph proposal + 5-10 tasks
+│     └─ Implement: task by task
+│     └─ Complete: openspec complete + archive
+│
+└─ Multi-service or complex feature?
+   └─ Use: Light Platform level
+      └─ Write: 1-page platform spec
+      └─ Fanout: to component teams
+      └─ Each team: openspec init
+      └─ Complete: each component + platform priority
+```
+
+## FAQ: Small Projects
+
+**Q: Do I really need a spec for a 3-task bug fix?**
+A: No. Use `agentic-agent task` only. Specs are for features that take more than 1 week.
+
+**Q: Can I skip tasks.md and just use agentic-agent task?**
+A: Yes. Use either `openspec init` (creates proposal + tasks.md) or `agentic-agent task create` directly (skip spec entirely).
+
+**Q: What if I'm a solo developer?**
+A: Use `agentic-agent task` to track your work. Skip specs entirely unless you need to remember context later.
+
+**Q: Can I add gates to a small project?**
+A: Yes, but it is usually overkill. Just test before marking complete. Gates are for high-risk features.
+
+**Q: What if requirements change mid-project?**
+A: Update proposal.md and tasks.md as you go. No approval needed.
+
+**Q: How do I integrate small project specs with larger platform specs?**
+A: Reference them: `agentic-agent openspec init "My Feature" --from ../platform-specs/feature-name/spec.md --implements "feature-name"`
 
 ## Next
 

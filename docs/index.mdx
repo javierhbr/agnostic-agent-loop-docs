@@ -62,6 +62,28 @@ A practical guide to **Spec-Driven Development** with two MCP servers, four Mark
   ]}
 />
 
+## Quick Navigation: Choose Your Workflow
+
+```text
+What are you building?
+
+├─ Bug fix or small refactor?
+│  └─ Just use: agentic-agent task create + complete
+│     (No spec needed)
+│
+├─ Single feature (1-2 weeks)?
+│  └─ Use: agentic-agent openspec init
+│     + write simple proposal + tasks
+│
+├─ Multi-package feature (monorepo)?
+│  └─ Use: /monorepo-openspec workflow
+│     + per-package specs + 7 prompts
+│
+└─ Critical/high-risk (payments, auth, regulatory)?
+   └─ Use: Full SDD
+      + all gates + verification + ADRs
+```
+
 ## What You’ll Find in This Guide
 
 | Section | Focus |
@@ -73,4 +95,16 @@ A practical guide to **Spec-Driven Development** with two MCP servers, four Mark
 | [The 5 Gates](/gates) | Non-negotiable checkpoints that block unsafe progress |
 | [Example Prompts](/prompts) | Real prompts by role and scenario |
 | [Roles & Responsibilities](/roles) | Ownership and accountability matrix |
-| [Scaling Guide](/scaling) | 1–2 people to 6+ team evolution |
+| [Scaling Guide](/scaling) | 1-2 people to 6+ team evolution |
+
+## Practical Guides
+
+| Guide | For | Use Case |
+|---|---|---|
+| [Field Guide](/field-guide) | Everyone | Navigate docs by scenario, role, and question |
+| [CLI Cheat Sheet](/cli-cheatsheet) | Everyone | One-page quick reference |
+| [Small Projects](/small-projects) | Solo devs, small teams | Bug fixes, simple features, lightweight specs |
+| [Monorepo OpenSpec](/monorepo-openspec) | Monorepo teams | Multi-package workflows, parallel development |
+| [Prompting Guide](/prompting-guide) | AI-assisted development | Prompt templates for all workflow levels |
+| [Usage Levels](/usage-levels) | Decision-making | Choose the right workflow level |
+| [Workflow Diagrams](/workflow-diagrams) | Visual learners | Diagram hub for all flows |

@@ -1,0 +1,123 @@
+---
+title: Commands
+slug: /agentic-agent-cli/commands
+description: Command groups and flags for tracks, tasks, context, specs, OpenSpec, skills, and automation.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="14c"
+  title="Commands"
+  desc="A structured reference by command group. Run any group with no args for interactive mode."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  Reference. This page favors scanning over explanation. For the why behind the workflow, start at [/agentic-agent-cli](/agentic-agent-cli).
+</CalloutBox>
+
+## Project
+
+| Command | Description |
+|---|---|
+| `init --name "Name"` | Initialize project structure |
+| `start` | Interactive setup wizard |
+| `prompts` | Browse example prompts and workflow recipes |
+| `prompts list [--category <cat>]` | List prompts (agent-prompt, cli-example, workflow-recipe) |
+| `prompts show <slug>` | Show prompt content |
+| `version` | Print version |
+
+## Tracks
+
+| Command | Description |
+|---|---|
+| `track init [name]` | Initialize a track with brainstorming scaffolding |
+| `track refine <id>` | Validate spec completeness |
+| `track activate <id>` | Generate plan and tasks from spec |
+| `track list` | List tracks |
+| `track show <id>` | Show track details |
+| `track archive <id>` | Archive a completed track |
+
+Track init flags: `--name`, `--type`, `--purpose`, `--constraints`, `--success`
+
+Track activate flags: `--decompose`
+
+## Tasks
+
+| Command | Description |
+|---|---|
+| `task create` | Create a task (wizard or flags) |
+| `task list` | List tasks by status |
+| `task show <id>` | Show task details |
+| `task claim <id>` | Claim task with readiness checks |
+| `task claim <id> --skip-validation` | Claim task without spec validation |
+| `task complete <id>` | Mark task as done |
+| `task decompose <id> ...` | Break into subtasks |
+| `task from-template` | Create from template (wizard) |
+| `task sample-task` | Create a sample task |
+
+Task create flags: `--title`, `--description`, `--spec-refs`, `--inputs`, `--outputs`, `--acceptance`
+
+## Context
+
+| Command | Description |
+|---|---|
+| `context generate <dir>` | Generate context.md for a directory |
+| `context scan` | Find directories missing context |
+| `context build --task <id>` | Build context bundle with resolved specs |
+
+## Specs
+
+| Command | Description |
+|---|---|
+| `spec list` | List specs across configured directories |
+| `spec resolve <ref>` | Resolve a spec ref and print content |
+| `spec generate <task-id>` | Generate missing specs for a task |
+| `spec generate --all` | Generate specs for all tasks with missing specs |
+| `spec create <ref>` | Create a new spec file with template |
+| `spec validate [task-id]` | Validate spec completeness for tasks |
+
+## OpenSpec
+
+| Command | Description |
+|---|---|
+| `openspec init <name> --from <file>` | Create change from requirements file |
+| `openspec import <id>` | Import tasks.md into backlog |
+| `openspec list` | List changes |
+| `openspec show <id>` | Show change details |
+| `openspec status <id>` | Show progress for a change |
+| `openspec complete <id>` | Validate all tasks done |
+| `openspec archive <id>` | Archive a completed change |
+
+## Automation
+
+| Command | Description |
+|---|---|
+| `autopilot start` | Process backlog tasks sequentially |
+| `autopilot start --dry-run` | Preview without changes |
+| `run` | Run orchestrator loop |
+| `work` | Interactive claim-to-complete workflow |
+| `work --follow-tdd` | TDD workflow: decompose into RED/GREEN/REFACTOR |
+
+## Validation, skills, simplify
+
+| Command | Description |
+|---|---|
+| `validate` | Run validation rules |
+| `validate --format json` | JSON output for CI/CD |
+| `skills` | Interactive skills menu |
+| `skills install [pack]` | Install a skill pack (`--tool a,b,c`) |
+| `skills list` | List available packs |
+| `skills ensure` | Ensure skills are up to date |
+| `simplify [dir...]` | Generate a focused simplification review bundle |
+| `simplify --task <id>` | Simplify using task scope directories |
+
+## Progress tracking
+
+| Command | Description |
+|---|---|
+| `learnings add "..."` | Record a learning |
+| `learnings list` | List learnings |
+| `learnings show` | Show progress and learnings |
+| `token status` | Show token usage stats |
+

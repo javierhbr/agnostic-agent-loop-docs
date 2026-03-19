@@ -1,0 +1,166 @@
+---
+title: Example Prompts
+slug: /prompts
+description: Real prompts for a Spec-Oriented Agent across feature, contract, component, hotfix, ADR, and gate-check scenarios.
+---
+
+import { SectionHeader, TabPanel, PromptItem, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="06"
+  title="Example Prompts"
+  desc="The agent always runs Phase 1 (identify request and missing context) before Phase 2 (produce spec or output)."
+/>
+
+<CalloutBox type="navy" label="How to use these prompts">
+  Use these with a Spec-Oriented Agent configured with the SDD system prompt. Jumping directly to code before request classification and context loading is a system violation.
+</CalloutBox>
+
+<TabPanel
+  tabs={[
+    {
+      id: "feature",
+      label: "New Feature",
+      content: (
+        <>
+          <PromptItem
+            badge="Product Manager"
+            badgeType="pm"
+            title="Kicking off a new cross-domain initiative"
+            context="Context: Starting Guest Checkout (ECO-124). No spec exists yet. Context Pack cp-v2 is ready."
+            prompt="We need guest checkout on our e-commerce platform. Users complete a full purchase without an account. Cart, Checkout, Payments, and Fulfillment are all involved. Create the platform spec for initiative ECO-124 using context pack cp-v2."
+            result="Agent identifies a cross-domain feature, maps affected domains, checks missing context, and produces a full platform spec with UX flow, domain responsibilities, contract baselines, NFRs, and gate results."
+          />
+          <PromptItem
+            badge="Product Manager"
+            badgeType="pm"
+            title="Clarify pass before planning"
+            context="Context: Architect has produced the feature spec. Clarification run before developer fan-out."
+            prompt="Run clarify on the guest checkout platform spec. Surface ambiguities before we write the plan. Flag anything that needs an ADR and assign owners."
+            result="Agent surfaces unresolved items, creates ADR drafts, marks the spec blocked_by those ADRs, and prevents planning until they are resolved."
+          />
+        </>
+      ),
+    },
+    {
+      id: "contract",
+      label: "Contract Change",
+      content: (
+        <>
+          <PromptItem
+            badge="Integration Owner"
+            badgeType="int"
+            title="Proposing a breaking OrderPlaced change"
+            context="Context: Need payment_intent_id and guest_email in OrderPlaced for ECO-124."
+            prompt="I need to add payment_intent_id and guest_email to OrderPlaced. Check all consumers, assess if this is breaking, and draft Contract Change Spec SPEC-CONTRACT-77 with a compatibility plan."
+            result="Agent finds consumers, flags PII controls, identifies breaking impact, and generates a dual-publish migration plan with sunset timeline and notifications."
+          />
+          <PromptItem
+            badge="Integration Owner"
+            badgeType="int"
+            title="Sunsetting deprecated contract version"
+            context="Context: CartUpdated v1 dual-publish window ends next week."
+            prompt="Check whether all consumers of CartUpdated v1 migrated to v2. If yes, create closure notice and mark v1 sunset-ready."
+            result="Agent verifies migration status, closes the dual-publish window, and updates contract status and graph traceability records."
+          />
+        </>
+      ),
+    },
+    {
+      id: "component",
+      label: "Component Spec",
+      content: (
+        <>
+          <PromptItem
+            badge="Component Team — Cart"
+            badgeType="eng"
+            title="Writing a fan-out component spec"
+            context="Context: Platform Spec OC-124 v1, context pack cp-v2, contract_change: yes."
+            prompt="I have the Cart fan-out task. Write the Cart Component Spec. Cart must support guest sessions via token, persist through checkout, and emit CartUpdated v2. Check Cart invariants first."
+            result="Agent loads cp-v2, validates invariants, queries approved patterns, and generates a component spec with traceability fields and gate outcomes."
+          />
+          <PromptItem
+            badge="Component Team — Payments"
+            badgeType="eng"
+            title="Unblocking after ADR approval"
+            context="Context: Payments Component Spec was blocked by ADR-219, now approved."
+            prompt="ADR-219 is approved with payment_intent_id idempotency. Unblock the Payments Component Spec and generate the implementation plan."
+            result="Agent updates blocked status, applies approved decision, confirms Gate 5 no longer blocked, and emits dependency-ordered implementation tasks."
+          />
+        </>
+      ),
+    },
+    {
+      id: "hotfix",
+      label: "Hotfix",
+      content: (
+        <>
+          <PromptItem
+            badge="On-Call Engineer"
+            badgeType="ai"
+            title="Production timeout urgent path"
+            context="Context: Stripe EU degraded, payment authorizations timing out, revenue impact live."
+            prompt="URGENT: payment authorization to Stripe times out after 30s. We route all traffic to EU. Need immediate mitigation."
+            result="Agent switches to hotfix path, creates minimal hotfix spec with immediate fix, rollback flag, and observability metric, then records follow-up hardening requirement."
+          />
+          <PromptItem
+            badge="Component Team"
+            badgeType="eng"
+            title="Post-hotfix hardening spec"
+            context="Context: HOTFIX-12 is stable in production."
+            prompt="HOTFIX-12 is stable. Write a hardening spec: proper circuit breaker, full observability, and ADR for resilience strategy."
+            result="Agent loads approved patterns, defines breaker thresholds and recovery behavior, adds metrics, and drafts ADR with options and trade-offs."
+          />
+        </>
+      ),
+    },
+    {
+      id: "adr",
+      label: "ADR",
+      content: (
+        <>
+          <PromptItem
+            badge="Platform Architect"
+            badgeType="arch"
+            title="Resolve blocking ADR before planning"
+            context="Context: ADR-220 (guest session expiry) blocks Cart and Checkout specs."
+            prompt="Resolve ADR-220 across three TTL options. Consider invariants, Redis cost, and abandonment impact. Draft recommendation."
+            result="Agent evaluates options against invariants and constraints, recommends best-fit option, and publishes ADR rationale to unblock dependent specs after approval."
+          />
+          <PromptItem
+            badge="Platform Architect"
+            badgeType="arch"
+            title="Global event versioning policy"
+            context="Context: Teams use inconsistent schema versioning strategies."
+            prompt="Create a global ADR that standardizes event schema versioning across domains with Kafka compatibility constraints."
+            result="Agent analyzes current patterns, compares options, proposes platform-wide rule set, and marks future contract specs blocked until approval."
+          />
+        </>
+      ),
+    },
+    {
+      id: "gatechk",
+      label: "Gate Check",
+      content: (
+        <>
+          <PromptItem
+            badge="AI Agent"
+            badgeType="ai"
+            title="Gate 1-5 analysis before fan-out"
+            context="Context: feature-spec.md OC-124 v1 exists; verifier gate check requested."
+            prompt="Run full gate analysis on OC-124 v1 and show pass/fail evidence for each gate."
+            result="Agent reports gate outcomes with concrete evidence, blocks fan-out on failures, and outputs exact remediation actions for failing gates."
+          />
+          <PromptItem
+            badge="Component Team"
+            badgeType="eng"
+            title="Check design against invariants"
+            context="Context: Engineer proposes storing Checkout session state in Cart Redis."
+            prompt="Can we store checkout session state in Cart Redis to simplify architecture?"
+            result="Agent returns Gate 2 FAIL with invariant IDs, explains ownership boundaries, and suggests compliant storage design for Checkout."
+          />
+        </>
+      ),
+    },
+  ]}
+/>

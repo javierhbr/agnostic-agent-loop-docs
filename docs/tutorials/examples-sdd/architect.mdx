@@ -1,0 +1,1209 @@
+---
+title:  Architect (Phase 4)
+slug: /agentic-agent-cli/examples/sdd/architect
+description: Produce feature-spec and component-specs for Subscription Billing; resolve ADR-001 card vault.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="15x"
+  title=" Architect (Phase 4)"
+  desc="Produce feature-spec and component-specs for Subscription Billing; resolve ADR-001 card vault."
+/>
+
+<CalloutBox type="teal" label="Source">
+  Files from tmp/sdd-ecommerce-payments
+</CalloutBox>
+
+### Architect prompts
+
+<details>
+  <summary>04-architect/prompts.md</summary>
+
+````markdown
+# Architect Phase: Prompts
+
+## How to Invoke the Architect Agent
+
+**Context:** You have Analyst's `discovery.md`. Now invoke Architect to design the platform feature-spec and per-component architecture.
+
+### Prompt for Architect Agent
+
+```
+You are running the Architect phase of the SDD Full workflow. Your job is to read
+discovery.md, call Platform MCP and Component MCPs, then produce:
+1. feature-spec.md (platform-level WHAT and WHY)
+2. component-spec.md × N (per-service HOW)
+3. ADR documents (blocking decisions)
+
+INITIATIVE: SBL-2025-Q1 - Subscription Billing Platform
+DISCOVERY: See 03-analyst/discovery.md
+
+YOUR JOB:
+1. Read discovery.md thoroughly
+2. Call Platform MCP: get_context_pack("Subscription Billing", risk="critical")
+3. Call Component MCP for each service:
+   - Payments Service: get_contracts(), get_invariants(), get_decisions()
+   - User Service: get_contracts(), get_invariants()
+   - Email Service: get_contracts()
+4. Produce feature-spec.md with 5+ acceptance criteria in Given/When/Then format
+5. Produce component-spec.md for each affected service (Billing, Payments, Email, User)
+6. Produce ADR-001: Decide on card storage strategy (self-hosted vault vs. Stripe)
+7. Self-check all 5 gates before handoff to Developer
+
+REQUIRED OUTPUTS:
+- 04-architect/feature-spec.md (2000-3000 words)
+- 04-architect/component-spec-billing.md
+- 04-architect/component-spec-payments.md
+- 04-architect/component-spec-email.md
+- 04-architect/component-spec-user.md (minimal)
+- 04-architect/ADR-001-card-vault.md
+
+REQUIRED SECTIONS (EACH WITH SOURCE: LINE):
+- Metadata (implements, context_pack, blocked_by, status)
+- Problem Statement
+- Goals / Non-Goals
+- User Experience / API Examples
+- Domain Responsibilities
+- Cross-Domain Interactions
+- NFRs (from Platform MCP)
+- Feature Flag & Rollback Strategy
+- Acceptance Criteria (min 3 in Given/When/Then)
+- Blocking Decisions
+- 5 Gates validation checklist
+
+RULES:
+- EVERY section has a Source: line citing the MCP call or discovery.md
+- Feature-spec focuses on WHAT (user experience, business goals)
+- Component-specs focus on HOW (technical contracts, data models, internal logic)
+- If a section requires a decision, create an ADR and block with blocked_by: [ADR-001, ...]
+- Run gate-check mentally before handing off
+
+START NOW. Read discovery.md and begin the feature-spec.
+```
+
+---
+
+## Example Architect Artifacts (Shown Below)
+
+See the actual spec files in this directory:
+- `feature-spec.md` — Platform-level WHAT
+- `component-spec-billing.md` — Billing Service HOW
+- `component-spec-payments.md` — Payments Service HOW
+- `component-spec-email.md` — Email Service HOW
+- `component-spec-user.md` — User Service changes
+- `ADR-001-card-vault.md` — Blocking decision on card storage
+
+These were produced by the Architect agent reading discovery.md and calling MCPs.
+
+````
+
+</details>
+
+### feature-spec.md
+
+<details>
+  <summary>04-architect/feature-spec.md</summary>
+
+````markdown
+# Feature Spec: Subscription Billing Platform
+
+**Feature ID:** SBL-2025-Q1
+**Implements:** Initiative SBL-2025-Q1
+**Context Pack:** cp-v2.1 (Payment + PII, Critical Risk)
+**Status:** Draft → Approved (after gate validation)
+**Blocked By:** ADR-001 (card vault decision)
+
+---
+
+## Metadata
+
+**Source:** Platform MCP v2.1 — Payment Initiation & PCI Scope
+
+- **Initiative:** SBL-2025-Q1 (see `01-initiative/initiative.md`)
+- **Risk Level:** Critical (payment + PII + data consistency)
+- **Workflow:** Full (Analyst → Architect → Developer × 5 → Verifier)
+- **Affected Services:** Billing (new), Payments, Email, User Service, Platform API
+- **Timeline:** 3-4 weeks
+- **Deployment:** Feature-flagged rollout (see Feature Flag Strategy below)
+
+---
+
+## Problem Statement
+
+**Source:** Discovery.md + Platform MCP Market Context
+
+ShopFlow merchants cannot offer recurring payments, limiting ShopFlow's addressable market to one-time purchase merchants. This causes:
+- **Support Overload:** 43 support tickets/month (12% of volume) asking "How do I do subscriptions?"
+- **Deal Loss:** 8 confirmed lost deals to competitors (Shopify, BigCommerce, WooCommerce) that have native subscriptions
+- **Market Gap:** 67% of SMB merchants want subscription options (2023 benchmark)
+
+**Success Metric:** Within 60 days of launch, 25% of new merchants enable at least one subscription plan.
+
+---
+
+## Goals & Non-Goals
+
+**Source:** Initiative SBL-2025-Q1
+
+### Goals
+
+1. Enable merchants to create, view, and manage subscription plans (monthly, quarterly, annual)
+2. Process recurring automatic charges on schedule with tokenized cards
+3. Handle common subscription lifecycle events: create, upgrade, downgrade, cancel, suspend
+4. Reduce subscription-related support tickets from 43/month to < 8/month (< 2% of load)
+5. Enable 25% of new merchants to launch subscriptions within 60 days
+
+### Non-Goals (Explicitly Out of Scope — Phase 2)
+
+- Dunning (automatic retry on failed charges) — too complex for Phase 1
+- Prorations (smart handling of mid-cycle downgrades) — implementation complexity
+- Metered billing (usage-based charges) — requires rate ingestion system
+- Multi-currency support — Phase 2, after core model is stable
+- Merchant dashboard for subscription analytics — merchant portal feature, Phase 2
+- Customer self-service portal — customer UX, Phase 2
+
+---
+
+## User Experience
+
+**Source:** Discovery.md team interviews + Platform MCP UX guidelines
+
+### Merchant Perspective: Creating a Subscription Plan
+
+```
+Merchant Flow:
+1. Products → Create New Product → Subscription Checkbox (not a one-time sale)
+2. Configure Plan:
+   - Plan name (e.g., "Monthly Pro")
+   - Price ($9.99)
+   - Billing interval (Monthly, Quarterly, Annual)
+   - First charge date (immediate, or custom date)
+3. Review and Publish
+4. See plan in products list with subscription badge
+5. When customers purchase, subscription record created, billing scheduled automatically
+```
+
+### Customer Perspective: Starting a Subscription
+
+```
+Customer Flow:
+1. Browse products
+2. See "Pro Plan - $9.99/month" (subscription badge visible)
+3. Add to cart
+4. Checkout (same as one-time, but see "auto-renews monthly" notice)
+5. Enter card (tokenized in Payments Service)
+6. Confirmation: "Your subscription is active. Next charge: 2025-03-25"
+7. Auto-charge on 2025-03-25 (silent, unless it fails)
+```
+
+### Observability: Seeing It Work
+
+```
+Operations Team:
+- Dashboard metric: "Active subscriptions: 1,247"
+- Alert: "Charge success rate dropped to 94% (threshold: 95%)"
+- Log search: "subscription_id:sub-12345 event:charge_failed reason:insufficient_funds"
+- Tracing: Drill into a charge: customer ID, amount, card last 4, result
+```
+
+---
+
+## Domain Responsibilities
+
+**Source:** Discovery.md component analysis + Platform MCP Domain Model
+
+Each service owns one domain; cross-domain communication is event-driven.
+
+| Service | Domain | Responsibility | Boundary |
+|---------|--------|---|---|
+| **Billing Service** | Subscription Lifecycle | • Create subscriptions • Schedule charges • Record renewals • Handle cancellations • Maintain subscription state | Event: emits `subscription.*` events |
+| **Payments Service** | Card Processing & Storage | • Tokenize cards (PCI scope) • Store tokens (if self-hosted) or issue tokens (if Stripe) • Process charges (recurring) • Emit charge results | Event: consumes `subscription.renewed` requests, emits `charge.*` events |
+| **Email Service** | Customer Notifications | • Subscribe to `subscription.created`, `subscription.renewed`, `subscription.cancelled` • Compose and send emails | Event: consumes `subscription.*` and `charge.*` events |
+| **User Service** | Customer Identity | • Mark customers with `has_active_subscription` • Track subscription history (cohort analysis) • Send webhooks on subscription events | Event: consumes `subscription.*` events |
+| **Platform API** | Entry Point | • Expose `/subscriptions/plans` (create, list, update) • Expose `/subscriptions` (list, create, view) • Expose `/subscriptions/:id/cancel` | REST API |
+
+---
+
+## Cross-Domain Interactions
+
+**Source:** Platform MCP Integration Model + Discovery.md data flow
+
+Event-driven architecture. No direct database access across domains.
+
+```
+Subscription Lifecycle (Data Flow):
+
+1. SUBSCRIPTION CREATION
+   Platform API (Merchant)
+     → Billing Service: POST /subscriptions
+       (merchant_id, plan_id, customer_id, card_token)
+     → Payments Service: Store token (if self-hosted) or validate Stripe token
+     → Billing Service: Create subscription record (status: ACTIVE, next_charge: T+30d)
+     → Emit Event: subscription.created
+       (subscription_id, customer_id, merchant_id, plan_id, next_charge_date)
+     ↓ (consumed by)
+     → Email Service: Sends "Subscription Confirmed" email
+     → User Service: Marks customer has_active_subscription=true
+     → Analytics: Ingests for cohort
+
+2. SCHEDULED CHARGE (Billing Scheduler)
+   Billing Service (cron every 6 hours, checks subscriptions due today)
+     → Identify subscriptions with next_charge_date <= today
+     → Emit Event: subscription.renew_requested
+       (subscription_id, amount, customer_id)
+     ↓ (consumed by)
+     → Payments Service: Processes charge against stored token
+     → Payments Service: Emit Event: charge.completed OR charge.failed
+     ↓ (consumed by)
+     → Billing Service: Updates subscription.next_charge_date or suspension_reason
+     → Email Service: Sends receipt (success) or alert (failure)
+     → User Service: Updates subscription_status in customer record
+
+3. SUBSCRIPTION CANCELLATION
+   Platform API (Merchant or Customer)
+     → Billing Service: DELETE /subscriptions/:id
+     → Billing Service: Set status: CANCELLED, next_charge_date: null
+     → Emit Event: subscription.cancelled
+       (subscription_id, customer_id, cancellation_reason)
+     ↓ (consumed by)
+     → Email Service: Sends "Subscription Cancelled" email
+     → User Service: Sets has_active_subscription=false
+     → Analytics: Cohort update
+```
+
+---
+
+## Non-Functional Requirements
+
+**Source:** Platform MCP v2.1 — Payment Processing Standards + Discovery.md observability needs
+
+### Performance
+
+- **Charge Processing Latency:** p50 < 50ms, p95 < 200ms, p99 < 500ms (credit card API is slow)
+  - Source: Platform MCP — payment integrations
+- **Subscription Creation:** p95 < 100ms (mostly database write)
+  - Source: Platform MCP — API response time SLA
+- **Batch Job (Daily Charge Schedule):** Complete all charges due within 1 hour
+  - Source: Discovery.md — team expectation
+
+### Reliability
+
+- **Charge Success Rate:** Target 99.5% (failures due to invalid card, insufficient funds, gateway down)
+  - Source: Platform MCP — payment SLA for production
+- **Event Delivery:** At-least-once (exactly-once preferred, but at-least-once acceptable with idempotency keys)
+  - Source: Platform MCP — event bus guarantees
+- **Rollback Strategy:** See Feature Flag & Rollback section below
+
+### Security & Compliance
+
+- **PCI-DSS Scope:** All card data handling must comply with PCI-DSS Level 1
+  - Source: Platform MCP v2.1 — payment security
+- **Card Storage:** Tokenized only; card numbers NEVER stored plaintext
+  - Decision: ADR-001 (self-hosted vault or Stripe vault)
+- **PII Masking:** Logs contain card last 4 only, email masked with **** characters
+  - Source: Platform MCP — PII handling policy
+- **Audit Trail:** Every subscription event logged with timestamp, actor, result
+  - Source: Platform MCP — compliance audit requirements
+- **Data Retention:** Subscription records kept for 7 years (financial law)
+  - Source: Platform MCP — data retention policy
+
+### Observability
+
+- **Logging:** Structured JSON logs for every lifecycle event, with traceable IDs
+- **Metrics:** Counters for subscriptions created/cancelled, histograms for charge latency, gauges for active count
+- **Tracing:** Distributed traces for charge processing across Billing → Payments → Email
+- **Alerting:** Page on-call if charge success rate drops below 95%
+
+---
+
+## Acceptance Criteria
+
+**Source:** Initiative SBL-2025-Q1 + Discovery.md + Platform MCP examples
+
+All criteria are testable and observable.
+
+### AC1: Merchants Can Create Subscription Plans
+
+**Given** a merchant is logged in and on the Products page,
+**When** they click "Create New Product" and enable "Subscription Plan",
+**Then** they can specify plan name, price, and billing interval (monthly/quarterly/annual) and publish the plan.
+
+**Evidence:** Unit test for `POST /subscriptions/plans` with valid payload returns 201. Integration test shows plan in products list with subscription badge.
+
+---
+
+### AC2: Customers Can Start Subscriptions
+
+**Given** a subscription plan exists,
+**When** a customer adds it to cart and completes checkout with a valid card,
+**Then** a subscription record is created with status ACTIVE, next_charge_date set to subscription interval, and confirmation email sent within 30 seconds.
+
+**Evidence:** Integration test: simulate customer purchase flow, verify subscription record in database, verify email sent via log.
+
+---
+
+### AC3: Automatic Charges Execute on Schedule
+
+**Given** a subscription has a next_charge_date <= today,
+**When** the Billing Service charge scheduler runs,
+**Then** a charge is processed against the stored card, the transaction succeeds or fails, and Billing Service updates the subscription's next_charge_date for the next cycle (or sets suspension_reason if failed).
+
+**Evidence:** Integration test: schedule a charge for today, run scheduler, verify charge processed and subscription state updated.
+
+---
+
+### AC4: Subscription Lifecycle Events Are Emitted
+
+**Given** any subscription event (created, renewed, cancelled, suspended),
+**When** the event occurs,
+**Then** an event is emitted to the event bus with subscription_id, customer_id, timestamp, and event type.
+
+**Evidence:** Unit test: verify events are published to event bus with correct schema. Integration test: verify Email Service receives and processes event.
+
+---
+
+### AC5: PII Is Masked in Logs
+
+**Given** a subscription lifecycle event is logged,
+**When** the event includes PII (customer email, card, address),
+**Then** logs contain only non-sensitive identifiers (subscription_id, customer_id, card_last_4) and email is masked (**** characters).
+
+**Evidence:** Log output inspection: search logs for a subscription event, verify no plaintext email or card found.
+
+---
+
+### AC6: Charge Failures Are Retryable and Observable
+
+**Given** a charge attempt fails (invalid card, gateway down, insufficient funds),
+**When** the failure is recorded,
+**Then** the subscription status reflects the failure, an alert is emitted, and the Billing Service scheduler will retry on the next cycle (up to 3 times).
+
+**Evidence:** Integration test: simulate failed charge, verify subscription status is "SUSPENDED_PAYMENT_FAILED", verify alert emitted, verify retry on next cycle.
+
+---
+
+### AC7: Rollback Strategy Is Tested
+
+**Given** the system is running subscriptions in production,
+**When** a critical bug is discovered,
+**Then** the rollback procedure can disable new subscriptions without affecting existing ones, and a reconciliation report identifies any missed/double charges.
+
+**Evidence:** Runbook test: execute disable procedure, verify new subscriptions rejected, existing subscriptions continue, verify reconciliation job produces accurate report.
+
+---
+
+## Feature Flag & Rollback Strategy
+
+**Source:** Platform MCP Deployment Practices + Discovery.md rollback concerns
+
+### Feature Flag
+
+```yaml
+flag_name: subscriptions_enabled
+default: false (disabled during development)
+rollout_strategy: phased
+  phase_1: 5% of new merchants (canary, 2 days)
+  phase_2: 50% of new merchants (ramp, 3 days)
+  phase_3: 100% of new merchants (general availability)
+kill_switch: subscriptions_kill_switch (disables new subscription creation in seconds)
+```
+
+### Rollback Procedure
+
+**If a critical bug is discovered:**
+
+1. **Immediate (0-30 min):** Flip `subscriptions_kill_switch` → new subscription creation disabled
+   - Existing subscriptions continue (live with bug, contain damage)
+   - No new customers affected
+
+2. **Investigation (30 min - 2 hours):** Understand the bug
+   - E.g., "Charges are succeeding but subscription state not updating"
+
+3. **Fix & Deploy (1-2 hours):** Deploy hotfix to Billing or Payments Service
+
+4. **Reconciliation (2-4 hours):** Run reconciliation job
+   - Compare Billing Service subscription records vs. Payments Service charge records
+   - Identify missed charges (should have happened but didn't) or double-charges
+   - Generate report for Finance team
+
+5. **Re-enable (post-reconciliation):** Flip `subscriptions_kill_switch` back on
+
+**Acceptance:** Rollback tested in staging before production release.
+
+---
+
+## Blocking Decisions
+
+**Source:** Discovery.md + CTO review
+
+### ADR-001: Card Storage Strategy (BLOCKS IMPLEMENTATION)
+
+**Decision Title:** Where will ShopFlow store tokenized credit cards?
+
+**Status:** PENDING (blocks Payments component-spec and all developer work)
+
+**Options:**
+1. **Self-Hosted Vault in Payments Service**
+   - Pro: Full control, no vendor lock-in, lower per-charge costs
+   - Con: PCI-DSS burden (security + audit), card rotation logic, our liability
+
+2. **Stripe Vault (via Stripe Connect)**
+   - Pro: PCI-DSS handled by Stripe, proven product, automatic card expiry
+   - Con: Vendor lock-in, higher transaction fees, customer data on Stripe
+
+3. **Hybrid: Tokenize via Stripe, Store Token at ShopFlow**
+   - Pro: Stripe handles PCI, we have token ownership
+   - Con: Still our responsibility to secure tokens, still third-party dependency
+
+**Recommendation:** Option 2 (Stripe Vault) for Phase 1
+- Justification: Stripe reduces time-to-market, PCI compliance risk is lower, feature parity achieved
+- Phase 2 can evaluate self-hosted if cost becomes concern
+
+**Decision Timeline:** CTO + Security review by EOD (3 days)
+
+**Impact:** Entire Payments component-spec depends on this. Cannot proceed to developer without decision.
+
+---
+
+## Gates Validation
+
+**Self-Check Performed by Architect:**
+
+- **Gate 1 — Context Completeness:** ✅ PASS
+  - Every section has Source: line
+  - Context Pack: cp-v2.1 declared in Metadata
+  - All MCP sources cited
+
+- **Gate 2 — Domain Validity:** ✅ PASS
+  - No cross-domain DB access (all event-driven)
+  - Each service owns its domain (Billing owns subscriptions, Payments owns charges)
+  - Event boundaries clear
+
+- **Gate 3 — Integration Safety:** ✅ PASS
+  - Events identified: `subscription.created`, `subscription.renewed`, `subscription.cancelled`, `charge.completed`, `charge.failed`
+  - Consumers listed: Email, User Service, Analytics
+  - No contract breaking (additive events)
+
+- **Gate 4 — NFR Compliance:** ✅ PASS
+  - Logging specified: structured JSON, PII masked, audit trail
+  - Metrics specified: success rate, latency, counts
+  - Tracing specified: distributed traces across services
+  - Alerting specified: on-call threshold
+
+- **Gate 5 — Ready to Implement:** ⏳ BLOCKED
+  - **Blocker:** ADR-001 (card vault decision) not yet resolved
+  - Cannot hand off to Developer until ADR decision made
+
+---
+
+## Next Steps
+
+1. ✓ Feature-spec complete (this document)
+2. ✓ Component-specs complete (see separate component-spec files)
+3. → **Resolve ADR-001** (CTO + Security meeting, 3 days)
+4. → Re-run Gate 5 check once ADR resolved
+5. → Create developer fan-out tasks (one per component: Billing, Payments, Email, User)
+6. → Hand off to Developer agents for parallel implementation
+
+---
+
+## References
+
+- [Initiative](../../01-initiative/initiative.md)
+- [Discovery](../../03-analyst/discovery.md)
+- [ADR-001](./ADR-001-card-vault.md)
+- [Component Spec: Billing](./component-spec-billing.md)
+- [Component Spec: Payments](./component-spec-payments.md)
+- [Component Spec: Email](./component-spec-email.md)
+
+````
+
+</details>
+
+### component-spec-billing.md
+
+<details>
+  <summary>04-architect/component-spec-billing.md</summary>
+
+````markdown
+# Component Spec: Billing Service
+
+**Component ID:** SBL-BILLING-001
+**Implements:** Feature SBL-2025-Q1 (Subscription Billing)
+**Context Pack:** cp-v2.1
+**Status:** Draft (blocked by ADR-001)
+**Blocked By:** ADR-001 (card vault decision)
+
+---
+
+## Overview
+
+The Billing Service is a new microservice responsible for the subscription lifecycle: creating subscriptions, maintaining billing schedules, triggering recurring charges, and managing cancellations. It is the source of truth for subscription state.
+
+**Source:** Feature-spec Problem Statement + Architecture review
+
+---
+
+## Domain Boundaries
+
+**Owns:** Subscription records, billing schedules, subscription lifecycle state
+
+**Does NOT own:** Card storage (Payments Service), customer data (User Service), email sending (Email Service)
+
+**Contracts:**
+- **Consumes:** `subscription.renew_requested` (from Billing scheduler)
+- **Emits:** `subscription.created`, `subscription.renewed`, `subscription.cancelled`, `subscription.suspended`
+- **Uses:** Payments Service API for charges (see component-spec-payments)
+
+---
+
+## Data Model
+
+### Subscription Record
+
+```typescript
+subscription {
+  id: string                    // unique, e.g. "sub_2xj9k2..."
+  merchant_id: string           // which merchant owns this
+  customer_id: string           // which customer is subscribed
+  plan_id: string               // which plan (monthly $9.99, etc.)
+  status: ACTIVE | CANCELLED | SUSPENDED_PAYMENT_FAILED | PAUSED
+  stripe_token_id: string       // token from Stripe vault (ADR-001)
+  next_charge_date: date        // when to charge next
+  created_at: timestamp
+  updated_at: timestamp
+  cancelled_at: timestamp (nullable)
+  cancellation_reason: string (nullable)
+}
+```
+
+### Plan Record (Merchant-facing)
+
+```typescript
+plan {
+  id: string
+  merchant_id: string
+  name: string                  // "Monthly Pro"
+  amount_cents: number          // 999 = $9.99
+  currency: "USD"
+  interval: "MONTHLY" | "QUARTERLY" | "ANNUAL"
+  description: string
+  is_active: boolean
+  created_at: timestamp
+}
+```
+
+---
+
+## API Contracts
+
+**Source:** Feature-spec Acceptance Criteria + Platform MCP REST standards
+
+### Merchant APIs
+
+#### Create Plan
+```
+POST /api/v1/subscriptions/plans
+{
+  name: "Monthly Pro",
+  amount_cents: 999,
+  interval: "MONTHLY",
+  description: "Pro plan with advanced features"
+}
+→ 201 {
+  id: "plan_abc123",
+  merchant_id: "merchant_456",
+  created_at: "2025-02-25T10:00:00Z"
+}
+```
+
+#### List Plans
+```
+GET /api/v1/subscriptions/plans
+→ 200 {
+  plans: [
+    { id, name, amount_cents, interval, is_active, created_at },
+    ...
+  ]
+}
+```
+
+#### Create Subscription
+```
+POST /api/v1/subscriptions
+{
+  plan_id: "plan_abc123",
+  customer_id: "cust_789",
+  stripe_token_id: "tok_visa_from_stripe"  // from Payments Service
+}
+→ 201 {
+  id: "sub_xyz789",
+  status: "ACTIVE",
+  next_charge_date: "2025-03-25",
+  created_at: "2025-02-25T10:00:00Z"
+}
+// Emits event: subscription.created
+```
+
+#### Cancel Subscription
+```
+DELETE /api/v1/subscriptions/:id
+→ 200 {
+  id: "sub_xyz789",
+  status: "CANCELLED",
+  cancelled_at: "2025-02-25T10:30:00Z"
+}
+// Emits event: subscription.cancelled
+```
+
+---
+
+## Implementation Responsibilities
+
+**Source:** Feature-spec feature flag + gate requirements
+
+1. **Subscription Lifecycle Management**
+   - Create, read, update, cancel operations
+   - State machine: ACTIVE → CANCELLED | SUSPENDED (on payment failure)
+   - Idempotent creation (same request twice = same subscription, not duplicate)
+
+2. **Billing Schedule**
+   - Daily scheduler job (runs every 6 hours) to find subscriptions due today
+   - For each due subscription, emit `subscription.renew_requested` event
+   - Retry logic: if charge fails, retry up to 3 times over next 2 days
+
+3. **Event Emission**
+   - Publish to event bus after every state change
+   - Event schema: `{ subscription_id, customer_id, merchant_id, event_type, timestamp }`
+   - At-least-once delivery (exactly-once preferred)
+
+4. **PII Handling**
+   - Never store card numbers or customer emails in subscription records
+   - Log only: subscription_id, customer_id, card_last_4 (from Payments Service), amount
+   - Mask email in logs
+
+---
+
+## Acceptance Criteria
+
+### AC1: Merchants Can Create Plans
+**Given** a merchant POSTs to `/subscriptions/plans` with valid data,
+**When** the request is processed,
+**Then** a plan is created, assigned a unique ID, and returned with 201.
+
+### AC2: Subscriptions Can Be Created
+**Given** a valid plan and Stripe token exist,
+**When** a POST to `/subscriptions` includes plan_id and stripe_token_id,
+**Then** a subscription record is created with status ACTIVE, next_charge_date set to interval, and event emitted.
+
+### AC3: Scheduler Triggers Charges
+**Given** a subscription exists with next_charge_date <= today,
+**When** the daily scheduler runs,
+**Then** a `subscription.renew_requested` event is emitted to Payments Service.
+
+### AC4: Cancellation Works
+**Given** a subscription exists,
+**When** a DELETE request is made,
+**Then** status becomes CANCELLED and event is emitted.
+
+---
+
+## Observability
+
+**Source:** Feature-spec NFR section + Discovery.md observability needs
+
+### Logging
+```
+event: "subscription.created"
+subscription_id: "sub_xyz789"
+merchant_id: "merchant_456"
+customer_id: "cust_789"
+amount_cents: 999
+interval: "MONTHLY"
+next_charge_date: "2025-03-25"
+timestamp: "2025-02-25T10:00:00Z"
+```
+
+### Metrics
+- Counter: `subscriptions.created` (per merchant, per plan)
+- Counter: `subscriptions.cancelled` (reason: user_request, payment_failed, etc.)
+- Gauge: `active_subscriptions_count` (per merchant)
+
+### Tracing
+- Span: `subscription.create` (parent: API request)
+- Span: `scheduler.renew` (triggered daily)
+
+---
+
+## Deployment
+
+**Source:** Feature-spec Feature Flag section
+
+- Feature flag: `subscriptions_enabled` (default: false during dev)
+- Rollout: Phased (5% → 50% → 100% over 1 week)
+- Kill switch: `subscriptions_kill_switch` (disables new subscriptions in seconds)
+
+---
+
+## Gates Check
+
+- ✅ Gate 1: Context Completeness (all sections have Source:)
+- ✅ Gate 2: Domain Validity (owns only subscriptions, events for cross-domain)
+- ✅ Gate 3: Integration Safety (events identified, consumers listed)
+- ✅ Gate 4: NFR Compliance (logging, metrics, tracing specified)
+- ⏳ Gate 5: Ready to Implement (blocked by ADR-001 — card vault not yet decided)
+
+---
+
+## Handoff to Developer
+
+Once ADR-001 is approved, this spec is unblocked and can be handed to the Developer agent for `impl-spec-billing.md` and `tasks.yaml` creation.
+
+**Inputs for Developer:**
+- This component-spec-billing.md
+- ADR-001 resolution (Stripe chosen)
+- Feature-spec constraints (acceptance criteria, NFRs)
+
+**Outputs Expected:**
+- `impl-spec-billing.md` (data model detail, code structure, edge cases)
+- `tasks.yaml` (decomposed into development tasks)
+- `verify.md` (test plan and verification)
+
+````
+
+</details>
+
+### component-spec-payments.md
+
+<details>
+  <summary>04-architect/component-spec-payments.md</summary>
+
+````markdown
+# Component Spec: Payments Service (Recurring Charges)
+
+**Component ID:** SBL-PAYMENTS-001
+**Implements:** Feature SBL-2025-Q1 (Subscription Billing → Payment Processing)
+**Context Pack:** cp-v2.1
+**Status:** Draft (blocked by ADR-001)
+**Blocked By:** ADR-001 (card vault decision — determines entire implementation)
+
+---
+
+## Overview
+
+The Payments Service handles card tokenization and recurring charge processing. In Phase 1, using Stripe Vault (per recommended ADR-001), we integrate with Stripe's API for secure token storage and charge processing.
+
+**Source:** Feature-spec + ADR-001 (Stripe Vault recommended)
+
+---
+
+## Domain Boundaries
+
+**Owns:** Card tokenization, charge processing, Stripe integration, charge state transitions
+
+**Does NOT own:** Subscription records (Billing Service), customer identity (User Service)
+
+**Contracts:**
+- **Consumes:** `subscription.renew_requested` from Billing Service
+- **Emits:** `charge.completed`, `charge.failed` to event bus
+- **Uses:** Stripe API (external system)
+
+---
+
+## Data Model
+
+### Charge Record
+
+```typescript
+charge {
+  id: string                    // unique, e.g. "charge_abc123"
+  subscription_id: string       // which subscription triggered this
+  amount_cents: number
+  currency: "USD"
+  stripe_charge_id: string      // Stripe's charge ID
+  stripe_token_id: string       // Token from Stripe vault
+  status: SUCCESS | FAILED
+  failure_reason: string (nullable)  // "insufficient_funds", "card_expired", etc.
+  attempt_number: number        // 1-3 (retries)
+  created_at: timestamp
+}
+```
+
+### Stripe Integration (if self-hosted in Phase 2)
+
+```typescript
+// NOT used in Phase 1 (Stripe vault)
+// Placeholder for Phase 2 self-hosted consideration
+
+stripe_customer {
+  id: string                    // Stripe Customer ID (maps to our customer)
+  shopflow_customer_id: string
+  stripe_id: string
+}
+
+stripe_token {
+  // NOT stored in Phase 1 (Stripe keeps it)
+}
+```
+
+---
+
+## API Contracts
+
+**Source:** Feature-spec + ADR-001 decision
+
+### Stripe Integration APIs (Internal to Payments Service)
+
+#### Tokenize Card
+```
+POST /api/v1/tokens/create
+{
+  card_number: "4242424242424242",
+  expiry_month: "12",
+  expiry_year: "2026",
+  cvc: "123"
+}
+→ 200 {
+  stripe_token_id: "tok_visa_from_stripe",
+  card_last_4: "4242",
+  created_at: "2025-02-25T10:00:00Z"
+}
+// Note: Card data in request is sent to Stripe, not stored at ShopFlow
+```
+
+#### Process Recurring Charge
+```
+POST /api/v1/charges/process-recurring
+{
+  subscription_id: "sub_xyz789",
+  stripe_token_id: "tok_visa_from_stripe",
+  amount_cents: 999,
+  idempotency_key: "sub_xyz789_2025-03-25"  // for retry idempotency
+}
+→ 200 {
+  id: "charge_abc123",
+  stripe_charge_id: "ch_stripe_id_from_stripe",
+  status: "SUCCESS",
+  amount_cents: 999,
+  created_at: "2025-02-25T10:00:00Z"
+}
+// Emits event: charge.completed
+
+OR
+
+→ 400 {
+  id: "charge_abc123",
+  status: "FAILED",
+  failure_reason: "card_declined",
+  created_at: "2025-02-25T10:00:00Z"
+}
+// Emits event: charge.failed
+```
+
+---
+
+## Implementation Responsibilities
+
+**Source:** Feature-spec + ADR-001 (Stripe Vault)
+
+1. **Card Tokenization**
+   - Accept card details from customer at checkout
+   - Send to Stripe API to tokenize (card never touches our servers)
+   - Return Stripe token to client, then to Billing Service
+   - Log tokenization with metadata (last 4, expiry, merchant_id) but NOT card data
+
+2. **Recurring Charge Processing**
+   - Consume `subscription.renew_requested` event from Billing Service
+   - Look up Stripe token from Billing Service (subscription.stripe_token_id)
+   - Call Stripe API to charge the token
+   - Record charge success/failure with reason
+   - Emit `charge.completed` or `charge.failed` event
+
+3. **Idempotency**
+   - Use idempotency keys (subscription_id + charge_date) to ensure retry safety
+   - If same charge retried, Stripe returns same result (no double-charge)
+
+4. **Error Handling**
+   - Categorize Stripe errors: card_declined, insufficient_funds, expired_card, gateway_error
+   - Non-retryable (card_declined, expired_card): set subscription status to SUSPENDED
+   - Retryable (gateway_error, timeout): schedule retry for next cycle
+
+5. **PII/PCI Handling**
+   - Never log or store card numbers
+   - Never store plain Stripe tokens (use references only)
+   - Log charge metadata: subscription_id, amount, card_last_4, result
+   - Compliance: card data handled per Stripe's PCI standards
+
+---
+
+## Acceptance Criteria
+
+### AC1: Cards Can Be Tokenized
+**Given** a customer provides card details,
+**When** POST to `/tokens/create`,
+**Then** Stripe returns a token and we store only the token (not the card).
+
+### AC2: Recurring Charges Process Successfully
+**Given** a Stripe token exists,
+**When** Payments Service receives `subscription.renew_requested`,
+**Then** charge is processed, Stripe API is called, and `charge.completed` or `charge.failed` is emitted.
+
+### AC3: Idempotency Works
+**Given** the same charge is requested twice (network retry),
+**When** both requests use same idempotency key,
+**Then** Stripe returns the same result (no double-charge).
+
+### AC4: Errors Are Categorized
+**Given** a charge fails,
+**When** Stripe returns error code,
+**Then** error is categorized (retryable vs. non-retryable) and Billing Service is notified.
+
+---
+
+## Observability
+
+**Source:** Feature-spec NFR + Discovery.md observability
+
+### Logging
+```
+event: "charge.processed"
+subscription_id: "sub_xyz789"
+charge_id: "charge_abc123"
+stripe_charge_id: "ch_stripe_id"
+amount_cents: 999
+card_last_4: "4242"
+status: "SUCCESS" | "FAILED"
+failure_reason: "card_declined" (if failed)
+attempt_number: 1
+timestamp: "2025-02-25T10:00:00Z"
+latency_ms: 250
+```
+
+### Metrics
+- Counter: `charges.attempted` (per merchant, per result)
+- Counter: `charges.succeeded` / `charges.failed` (by failure_reason)
+- Histogram: `charge_latency_ms` (p50, p95, p99)
+
+### Tracing
+- Span: `charge.process` (call Stripe API)
+- Attributes: subscription_id, amount, card_last_4
+
+### Alerts
+- Page on-call if charge success rate < 95%
+- Page on-call if charge latency p95 > 500ms (Stripe is slow)
+
+---
+
+## Dependencies
+
+**Source:** Feature-spec integration
+
+- **Stripe API:** For tokenization and charging
+  - Endpoint: https://api.stripe.com/v1/
+  - Auth: API key (stored in secrets)
+  - Timeout: 30 seconds (Stripe can be slow)
+
+- **Billing Service:** Consumes `subscription.renew_requested` event
+- **Event Bus:** Publishes `charge.completed`, `charge.failed`
+
+---
+
+## Deployment
+
+**Source:** Feature-spec feature flag
+
+- Feature flag: `subscriptions_enabled` (controls whether charges are triggered)
+- Stripe account: Separate test + production credentials
+- Rate limiting: 100 charges/sec per merchant (configurable)
+
+---
+
+## Phase 2 Optionality (Notes for Future)
+
+If Phase 2 evaluates self-hosted vault:
+- This spec would change significantly
+- Stripe integration becomes optional (fallback only)
+- Card rotation, expiry, encryption logic added
+- PCI-DSS audit scope increases
+
+---
+
+## Gates Check
+
+- ✅ Gate 1: Context Completeness (all sections sourced)
+- ✅ Gate 2: Domain Validity (owns charges, events for cross-domain)
+- ✅ Gate 3: Integration Safety (charge events clear, consumers listed)
+- ✅ Gate 4: NFR Compliance (logging, metrics, tracing, alerts specified)
+- ⏳ Gate 5: Ready to Implement (blocked by ADR-001 resolution)
+
+Once ADR-001 is approved (Stripe chosen), this spec is unblocked.
+
+---
+
+## Handoff to Developer
+
+**Inputs:**
+- This component-spec-payments.md
+- ADR-001 resolution
+- Feature-spec (acceptance criteria, NFRs)
+
+**Outputs Expected:**
+- `impl-spec-payments.md` (Stripe integration code structure, edge cases)
+- `tasks.yaml` (decomposed tasks)
+- `verify.md` (integration tests with Stripe sandbox)
+
+````
+
+</details>
+
+### ADR-001-card-vault.md
+
+<details>
+  <summary>04-architect/ADR-001-card-vault.md</summary>
+
+````markdown
+# ADR-001: Card Storage Strategy
+
+**Status:** PENDING DECISION (blocks implementation)
+**Date Created:** 2025-02-25
+**Owner:** CTO + Security Team
+**Scope:** Payment Processing Architecture
+
+---
+
+## Context
+
+The Subscription Billing feature requires storing tokenized credit card information for automatic recurring charges. This storage decision has major implications for security, compliance, cost, and time-to-market.
+
+**Source:** Discovery.md identified card vault as a blocking decision. Feature-spec gates validation requires resolution before developer handoff.
+
+---
+
+## Decision Required
+
+**Question:** Where will ShopFlow store and manage tokenized credit card tokens?
+
+---
+
+## Options
+
+### Option A: Self-Hosted Vault in Payments Service
+
+**Approach:** Build a secure vault in the Payments Service to store tokenized card tokens.
+
+**Pros:**
+- Full control of card data
+- No vendor lock-in
+- Lower per-charge transaction fees (no Stripe markup)
+- Customer card data stays within ShopFlow infrastructure
+
+**Cons:**
+- **PCI-DSS Compliance:** We become Level 1 merchant (highest burden)
+  - Annual security audit required (~$50-100k)
+  - Card rotation, expiry, deletion logic is our responsibility
+  - Encryption, access control, monitoring all our liability
+- **Security Risk:** Higher attack surface (we manage the vault)
+- **Time-to-Market:** 4-6 weeks to build + audit
+- **Maintenance Burden:** Ongoing updates for security patches, card networks changes
+
+**Cost Estimate:** $30-50k initial + $20k/year maintenance
+
+**Timeline:** 6-8 weeks (build + security audit)
+
+---
+
+### Option B: Stripe Vault (via Stripe Connect)
+
+**Approach:** Stripe stores the tokenized card. We receive a token that we can re-use for charges.
+
+**Pros:**
+- **PCI-DSS:** Stripe handles compliance (they are Level 1 certified)
+- **Proven:** Millions of merchants use Stripe vaults, battle-tested
+- **Automatic Card Expiry:** Stripe updates expired cards automatically (if customer updates in Stripe)
+- **Time-to-Market:** 2-3 weeks to integrate
+- **Lower Liability:** Stripe bears PCI compliance responsibility
+- **Security:** Stripe security team is world-class
+
+**Cons:**
+- Vendor Lock-in: If we ever want to switch payment processors, card migration is complex
+- Higher Transaction Fees: Stripe charges 2.9% + $0.30 per charge (vs. 1-2% for self-hosted gateways)
+- Customer Card Data on Stripe: We don't control the storage location (though Stripe's security is excellent)
+
+**Cost Estimate:** 2.9% + $0.30 per transaction (~$0.40 per $10 subscription, scales with revenue)
+
+**Timeline:** 2-3 weeks
+
+---
+
+### Option C: Hybrid (Stripe Tokenization, ShopFlow Storage)
+
+**Approach:** Stripe tokenizes the card (they handle PCI), we store the token in our vault.
+
+**Pros:**
+- Stripe handles initial PCI burden
+- We maintain token ownership
+- Can switch processors later (tokens are ours)
+
+**Cons:**
+- **We still store payment data:** Token is still sensitive, still PCI scope
+- **Compliance complexity:** Hybrid responsibility (Stripe's PCI + our token security)
+- **Stripe tokenization cost:** Still pay Stripe transaction fee even though we don't use their vault
+- **Time-to-Market:** 4-5 weeks (Stripe integration + our token vault)
+
+**Cost Estimate:** Stripe fees + self-hosted vault costs
+
+**Timeline:** 4-5 weeks
+
+---
+
+## Recommendation
+
+**OPTION B: Stripe Vault**
+
+### Rationale
+
+1. **Time-to-Market is Critical:** 3-week timeline vs. 6-8 weeks means we capture Q1 merchant demand
+2. **Risk Reduction:** PCI-DSS compliance is Stripe's responsibility, reducing our attack surface significantly
+3. **Cost-Effective for Phase 1:** At 5,000 subscriptions × $120/year avg = $600k MRR, transaction fees are ~$18k/month (manageable)
+4. **Phase 2 Optionality:** Once feature is proven and revenue justifies, Phase 2 can evaluate self-hosted vault
+5. **Team Capacity:** Security + Infrastructure team is thin; Stripe reduces hiring needs
+
+### Risks Mitigated
+
+- **Vendor Lock-In Risk:** If cost becomes prohibitive in Phase 2, we can migrate tokens (Stripe provides export)
+- **Card Data Risk:** Stripe's security is higher than we can achieve in Phase 1
+
+### Decision Impact on Components
+
+- **Payments Service:** Integrate with Stripe API for tokenization and charge processing
+- **Billing Service:** Store Stripe token IDs (not card numbers) in subscription records
+- **Observability:** Log every token creation and charge with Stripe token ID (not card data)
+
+---
+
+## Next Steps
+
+1. **Decision:** CTO + Security approve this ADR (3-day timeline)
+2. **Stripe Setup:** Finance provisioning Stripe account (2 days)
+3. **Integrate:** Payments Service developer implements Stripe integration (3-4 days)
+4. **Component Specs:** Re-validate component-spec-payments with Stripe choice
+5. **Unblock:** Payments component-spec is no longer blocked; hand off to developer
+
+---
+
+## Sign-Off (Pending)
+
+- **Decision Maker:** [CTO Name] — Pending approval
+- **Security Review:** [Security Lead] — Pending review
+- **Finance:** [Finance] — Pending budget approval
+
+**Decision Date:** [To be filled on approval]
+
+**Status Update:** When this ADR reaches `Approved`, the feature-spec and component-specs transition from `Draft` to `Approved`, and developer work can begin.
+
+````
+
+</details>
+

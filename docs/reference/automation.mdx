@@ -1,0 +1,51 @@
+---
+title: Automation
+slug: /agentic-agent-cli/automation
+description: Run the loop for you with autopilot/work, and keep validation as a hard stop.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="14e"
+  title="Automation"
+  desc="Autopilot processes tasks sequentially. Work provides an interactive claim-to-complete flow. Validation stays the guardrail."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  How-to. Use this when you want the CLI to drive the loop while keeping readiness checks and validation.
+</CalloutBox>
+
+## Autopilot: process backlog tasks sequentially
+
+Preview without writing changes:
+
+```bash
+agentic-agent autopilot start --dry-run
+```
+
+Process up to N tasks:
+
+```bash
+agentic-agent autopilot start --max-iterations 5
+```
+
+## Work: guided claim -> build -> validate -> complete
+
+```bash
+agentic-agent work
+```
+
+TDD mode (creates RED/GREEN/REFACTOR subtasks and checks the TDD pack is installed):
+
+```bash
+agentic-agent work --task TASK-001 --follow-tdd
+```
+
+## Validate: keep drift out
+
+```bash
+agentic-agent validate
+agentic-agent validate --format json
+```
+

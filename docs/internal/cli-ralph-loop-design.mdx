@@ -1,0 +1,261 @@
+---
+title: CLI Ralph Loop Design
+slug: /internal/cli-ralph-loop-design
+sidebar_label: CLI Ralph Loop
+description: Design for executing Ralph Wiggum iterative loops from the terminal CLI.
+---
+
+import { CalloutBox } from '@site/src/components/tom';
+
+<CalloutBox type="amber" label="Internal">
+  Architecture specs, design documents, and plans for contributors.
+</CalloutBox>
+
+## Problem Statement
+
+Currently, `/ralph-loop` only exists as a command in AI chat interfaces (Claude.ai, etc.). There's no way to execute a Ralph Wiggum iterative loop from the terminal using `agentic-agent` CLI.
+
+**User need:** Execute ralph-loop methodology from terminal for:
+- Scripting and automation
+- CI/CD pipelines
+- Non-interactive environments
+- When working without AI chat access
+
+## Current Workarounds
+
+### 1. Autopilot (exists)
+```bash
+agentic-agent autopilot start --max-iterations 5
+```
+
+**Limitations:**
+- Not iterative convergence loop
+- Processes tasks linearly, not iteratively
+- No promise/completion signal
+- No refinement iterations on same task
+
+### 2. Run command (exists)
+```bash
+agentic-agent run
+```
+
+**Limitations:**
+- Single execution cycle
+- No iteration loop
+- No convergence checking
+
+## Solution: CLI Ralph Loop
+
+Add `agentic-agent ralph` command that implements Ralph Wiggum methodology from terminal.
+
+### Design
+
+```
+agentic-agent ralph <TASK_ID> [flags]
+
+Flags:
+  --max-iterations int       Maximum iterations (default 10)
+  --completion-signal string Signal to detect completion (default "TASK COMPLETE")
+  --agent string            AI agent to use (claude-code, cursor, copilot, etc.)
+  --prompt-file string      File containing iteration prompt template
+  --auto                    Auto-generate prompt from task details
+```
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CLI Ralph Loop                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  1. Load task details (specs, acceptance, scope)            │
+│  2. Generate/load iteration prompt                           │
+│  3. For each iteration (1 to max):                          │
+│     ├─ Execute agent with prompt + context                  │
+│     ├─ Capture output                                        │
+│     ├─ Check for completion signal                          │
+│     ├─ Update progress                                       │
+│     └─ If signal detected → complete and exit               │
+│  4. After loop: complete task or report failure             │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Implementation
+
+The command structure uses Cobra with `ralph TASK_ID` as the main command. It loads the task, generates or loads a prompt, detects the agent, and executes iterations until the completion signal is found or max iterations are reached.
+
+## Usage Examples
+
+### Example 1: Auto Mode with Claude Code
+
+```bash
+# 1. Claim task first
+agentic-agent task claim TASK-123
+
+# 2. Execute ralph loop (auto-generates prompt)
+agentic-agent ralph TASK-123 --auto --agent claude-code
+```
+
+### Example 2: Custom Prompt File
+
+```bash
+# Create custom prompt
+cat > ralph-prompt.md <<EOF
+Implement TASK-123: User Authentication
+
+Read specs:
+- .agentic/spec/auth/requirements.md
+- .agentic/spec/auth/api-design.md
+
+Acceptance:
+- JWT tokens generated correctly
+- Login endpoint returns 200 with valid creds
+- Tests pass
+
+On each iteration:
+1. Read specs
+2. Implement missing pieces
+3. Run: npm test
+4. If all pass: output "AUTH COMPLETE"
+EOF
+
+# Execute with custom prompt
+agentic-agent ralph TASK-123 \
+  --prompt-file ralph-prompt.md \
+  --completion-signal "AUTH COMPLETE" \
+  --max-iterations 15
+```
+
+### Example 3: CI/CD Pipeline
+
+```bash
+#!/bin/bash
+# ci-ralph-loop.sh
+
+set -e
+
+# Claim task
+agentic-agent task claim $TASK_ID
+
+# Execute ralph loop
+if agentic-agent ralph $TASK_ID --auto --max-iterations 20; then
+  echo "Task completed successfully"
+  agentic-agent validate
+  agentic-agent task complete $TASK_ID
+  gh pr create --title "Complete $TASK_ID"
+else
+  echo "Ralph loop failed"
+  exit 1
+fi
+```
+
+## Agent Execution Strategies
+
+### Strategy 1: CLI Integration (if agent has CLI)
+
+Execute via `claude chat --file` or similar agent CLI.
+
+### Strategy 2: API Integration
+
+Call the Anthropic API directly with the context bundle as the prompt.
+
+### Strategy 3: Interactive Mode (human-in-loop)
+
+Write the bundle to a file and open in the user's editor for manual response.
+
+## Alternative: Wrapper Script for Chat AI
+
+If full CLI integration is complex, provide a wrapper that bridges terminal and chat:
+
+```bash
+#!/bin/bash
+# agentic-ralph.sh - Terminal wrapper for chat AI ralph loops
+
+TASK_ID=$1
+MAX_ITER=${2:-10}
+
+# Claim task
+agentic-agent task claim $TASK_ID
+
+# Generate prompt
+PROMPT=$(agentic-agent task show $TASK_ID --format ralph-prompt)
+
+# Output instructions for user to copy to chat AI
+# Wait for user confirmation, then complete task
+```
+
+## Benefits
+
+**CLI Ralph Loop:**
+- Scriptable and automatable
+- Works in CI/CD pipelines
+- No need for web browser
+- Consistent with other agentic-agent commands
+
+**Wrapper Script:**
+- Simple to implement
+- Works immediately with existing chat AI
+- No complex agent integration needed
+
+## Implementation Phases
+
+### Phase 1: Wrapper Script (Quick Win)
+- Create `agentic-ralph.sh` wrapper
+- Add `--format ralph-prompt` to task show
+- Document workflow
+
+### Phase 2: Basic CLI Integration
+- Add `ralph` command to CLI
+- Implement auto-prompt generation
+- Support interactive mode
+
+### Phase 3: Agent Integration
+- Claude Code API integration
+- Cursor integration
+- Copilot integration
+
+### Phase 4: Advanced Features
+- Token tracking during loop
+- Auto-checkpoint on iteration N
+- Progress visualization
+- Multi-task ralph loops
+
+## Open Questions
+
+1. **How to handle interactive agent responses?**
+   - Wait for completion before next iteration?
+   - Stream output in real-time?
+
+2. **Should ralph loop support multiple tasks?**
+   - One task per loop (current design)
+   - Multiple tasks sequentially
+   - Parallel task execution
+
+3. **How to persist iteration state?**
+   - In-memory only
+   - Write to `.agentic/ralph-state.json`
+   - Use session tracking
+
+4. **Token limits during long loops?**
+   - Auto-checkpoint at threshold
+   - Warn and continue
+   - Pause for user input
+
+## Summary
+
+Two paths forward:
+
+**Option A: Full CLI Implementation**
+- `agentic-agent ralph TASK-ID --auto`
+- Executes agent via CLI/API
+- Manages iteration loop
+- Detects completion signal
+
+**Option B: Wrapper Script (faster)**
+- `agentic-ralph.sh TASK-ID`
+- Generates prompt
+- Human copies to chat AI
+- Returns to complete task
+
+**Recommendation:** Start with Option B (wrapper) for immediate value, then build toward Option A as agent integrations mature.

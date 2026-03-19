@@ -1,0 +1,68 @@
+---
+title: Quick Start
+slug: /agentic-agent-cli/quickstart
+description: Install the CLI, initialize a project, and complete your first task end-to-end.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="14a"
+  title="Quick Start"
+  desc="Install, initialize, and run the claim -> build -> validate -> complete loop once."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  Tutorial. Follow this once to learn the flow. For fast lookup later, use [/agentic-agent-cli/commands](/agentic-agent-cli/commands).
+</CalloutBox>
+
+## 1) Install
+
+Prereqs: Go 1.22+, Git.
+
+```bash title="Install (recommended)"
+go install github.com/javierhbr/agnostic-agent-loop@latest
+agentic-agent version
+```
+
+## 2) Initialize a project
+
+```bash title="Create a project"
+mkdir my-project && cd my-project
+agentic-agent init --name "My Project"
+```
+
+## 3) Create a track (idea -> spec)
+
+```bash title="Track init (creates brainstorm scaffolding)"
+agentic-agent track init "User Authentication" \
+  --purpose "Secure user login" \
+  --success "Users can register, login, logout"
+```
+
+Use the generated `brainstorm.md` with your AI agent, then validate spec completeness:
+
+```bash title="Spec completeness check"
+agentic-agent track refine user-authentication
+```
+
+## 4) Activate (plan -> tasks)
+
+```bash title="Activate + decompose into tasks"
+agentic-agent track activate user-authentication --decompose
+```
+
+## 5) Claim one task, generate context, validate
+
+```bash title="Work a single task"
+agentic-agent task claim TASK-001
+agentic-agent context generate internal/auth
+agentic-agent validate
+agentic-agent task complete TASK-001
+```
+
+## What to do next
+
+- Configure spec discovery across multiple directories: [/agentic-agent-cli/configuration](/agentic-agent-cli/configuration)
+- Install and target skill packs per task: [/agentic-agent-cli/skills](/agentic-agent-cli/skills)
+- Automate the loop: [/agentic-agent-cli/automation](/agentic-agent-cli/automation)

@@ -1,0 +1,240 @@
+---
+title: Agent-Aware Token Management
+slug: /internal/agent-token-awareness
+sidebar_label: Token Awareness
+description: Design for agent-aware token tracking, checkpointing, and session resumption in Ralph loops.
+---
+
+import { CalloutBox } from '@site/src/components/tom';
+
+<CalloutBox type="amber" label="Internal">
+  Architecture specs, design documents, and plans for contributors.
+</CalloutBox>
+
+## Problem Statement
+
+When AI agents (Claude Code, Cursor, Copilot, etc.) execute `/ralph-loop`, they need token awareness to:
+
+1. **Avoid context exhaustion** — Running out of tokens mid-task
+2. **Create checkpoints** — Save state before hitting limits
+3. **Resume intelligently** — Pick up where they left off
+4. **Provide user guidance** — Tell users when sessions need refreshing
+
+**Current limitation:** The `internal/token/counter.go` is a basic estimator. AI agents have no visibility into their actual context usage or limits.
+
+## Solution: Agent-Aware Token Tracking
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Ralph Loop Iteration                     │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │ 1. Read specs + context                               │  │
+│  │ 2. Execute iteration                                  │  │
+│  │ 3. Check acceptance criteria                          │  │
+│  │ 4. Track token usage                                  │  │
+│  │ 5. Check if approaching agent limit                   │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                           │                                  │
+│                           ▼                                  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │        Approaching Limit? (e.g., 80% of max)          │  │
+│  └───────────────────────────────────────────────────────┘  │
+│          │                                  │                │
+│          │ No                               │ Yes            │
+│          ▼                                  ▼                │
+│   Continue loop            ┌─────────────────────────────┐  │
+│                            │ Create checkpoint:          │  │
+│                            │ - Save current progress     │  │
+│                            │ - Write resumption prompt   │  │
+│                            │ - Output guidance to user   │  │
+│                            └─────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+#### 1. Agent Registry with Token Limits
+
+```go
+// internal/token/limits.go
+
+type AgentLimits struct {
+    Name         string
+    MaxTokens    int  // Total context window
+    SafeLimit    int  // When to warn (e.g., 80% of max)
+    OutputTokens int  // Reserved for output
+}
+
+var AgentLimitRegistry = map[string]AgentLimits{
+    "claude-code": {
+        Name:         "claude-code",
+        MaxTokens:    200000,
+        SafeLimit:    160000,
+        OutputTokens: 8000,
+    },
+    "cursor": {
+        Name:         "cursor",
+        MaxTokens:    128000,
+        SafeLimit:    102400,
+        OutputTokens: 4096,
+    },
+    "copilot": {
+        Name:         "copilot",
+        MaxTokens:    32000,
+        SafeLimit:    25600,
+        OutputTokens: 2048,
+    },
+    "gemini": {
+        Name:         "gemini",
+        MaxTokens:    1000000,
+        SafeLimit:    800000,
+        OutputTokens: 8192,
+    },
+    "windsurf": {
+        Name:         "windsurf",
+        MaxTokens:    200000,
+        SafeLimit:    160000,
+        OutputTokens: 8000,
+    },
+}
+```
+
+#### 2. Session Token Tracker
+
+Tracks current usage, checks if approaching limit, calculates remaining tokens, and returns usage percentage.
+
+#### 3. Checkpoint Manager
+
+Saves checkpoints with timestamp, task ID, iteration, tokens used, work completed, remaining work, files modified, test status, and resumption hints. Generates resumption prompts for fresh sessions.
+
+#### 4. Integration with Ralph Loop
+
+The loop creates an executor, tracks token usage per iteration, and pauses with a checkpoint when approaching the limit.
+
+### CLI Integration
+
+#### New Commands
+
+```bash
+# View current session token usage
+agentic-agent token status
+
+# List checkpoints for a task
+agentic-agent token checkpoints TASK-123
+
+# Load resumption prompt
+agentic-agent token resume TASK-123
+
+# Configure agent token limits
+agentic-agent token limits --agent claude-code --max 200000 --safe 160000
+```
+
+### Configuration
+
+```yaml
+# agnostic-agent.yaml
+
+tokens:
+  tracking_enabled: true
+  checkpoint_threshold: 0.80  # 80% of limit
+  auto_checkpoint: true        # Auto-create on threshold
+
+agents:
+  defaults:
+    max_tokens: 100000
+    safe_limit: 80000
+
+  overrides:
+    - name: claude-code
+      max_tokens: 200000
+      safe_limit: 160000
+      output_tokens: 8000
+
+    - name: gemini
+      max_tokens: 1000000
+      safe_limit: 800000
+      output_tokens: 8192
+```
+
+## Usage Scenarios
+
+### Scenario 1: Agent Reaches Limit Mid-Task
+
+The agent executing a ralph loop is automatically paused at ~80% token usage. A checkpoint is created, and a resumption file is generated for the next session.
+
+### Scenario 2: User Manually Resumes
+
+In a new session, `agentic-agent token resume TASK-123` outputs a structured resumption prompt with work completed, remaining work, files modified, test status, and next steps.
+
+### Scenario 3: Preventive Checkpoint
+
+Users can force a checkpoint at any time with `agentic-agent token checkpoint TASK-124 --force`.
+
+## Benefits
+
+1. **No Context Loss** — Checkpoints preserve all progress
+2. **Agent-Aware** — Knows limits for Claude, Copilot, Gemini, etc.
+3. **User Transparency** — Clear guidance on when/how to resume
+4. **Automatic** — Triggers at 80% by default (configurable)
+5. **Resumption Friendly** — Generated prompts make it easy to continue
+
+## Implementation Phases
+
+### Phase 1: Core Token Tracking
+- Create `internal/token/limits.go` with agent registry
+- Create `internal/token/session.go` for tracking
+- Integrate with orchestrator loop
+- Add basic CLI: `agentic-agent token status`
+
+### Phase 2: Checkpointing
+- Create `internal/token/checkpoint.go`
+- Implement checkpoint creation logic
+- Generate resumption prompts
+- Add CLI: `agentic-agent token checkpoint TASK-ID`
+
+### Phase 3: Auto-Recovery
+- Detect existing checkpoints on task claim
+- Offer to resume from checkpoint
+- Auto-load last checkpoint state
+- Add CLI: `agentic-agent token resume TASK-ID`
+
+### Phase 4: Advanced Features
+- Token usage analytics
+- Per-task token budgets
+- Multi-session task chains
+- Integration with progress tracking
+
+## Open Questions
+
+1. **How to estimate tokens accurately?**
+   - Current: 4 chars = 1 token (rough)
+   - Better: Use tiktoken library for OpenAI models
+   - Best: Agent-specific estimators
+
+2. **Should we support mid-iteration checkpoints?**
+   - Pro: More granular recovery
+   - Con: Complexity in state management
+
+3. **How to handle git state across sessions?**
+   - Checkpoint includes branch name
+   - Resume verifies correct branch
+   - Warn if uncommitted changes exist
+
+4. **What about parallel agent sessions?**
+   - Each agent gets own session tracker
+   - Checkpoints are agent-scoped
+   - Resume from correct agent type
+
+## Summary
+
+This design adds token-awareness to the ralph loop workflow, enabling AI agents to:
+
+- **Monitor** their context usage in real-time
+- **Pause** automatically when approaching limits
+- **Checkpoint** progress for resumption
+- **Resume** seamlessly in fresh sessions
+- **Guide** users on session management
+
+The system is agent-agnostic (works with Claude, Copilot, Gemini, etc.) and provides clear user feedback on when/how to create new sessions.

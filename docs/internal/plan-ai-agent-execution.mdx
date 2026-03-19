@@ -1,0 +1,116 @@
+---
+title: AI Agent Execution Integration Plan
+slug: /internal/plan-ai-agent-execution
+sidebar_label: Plan - Agent Execution
+description: Implementation plan for integrating AI model execution into autopilot and creating MCP server for Ralph loop integration.
+---
+
+import { CalloutBox } from '@site/src/components/tom';
+
+<CalloutBox type="amber" label="Internal">
+  Architecture specs, design documents, and plans for contributors.
+</CalloutBox>
+
+**Goal:** Integrate AI model execution into autopilot and create MCP server for Ralph loop integration.
+
+**Architecture:** Add agent executor abstraction supporting Claude API, Anthropic SDK, and MCP server communication. Enhance autopilot to invoke agents and check completion. Create MCP server exposing agentic-agent operations for human-driven Ralph loops.
+
+**Tech Stack:** Go 1.21+, Anthropic SDK, MCP protocol (TypeScript), Cobra CLI, existing agentic-agent infrastructure
+
+---
+
+## Task 1: Create Agent Executor Interface
+
+**Files:**
+- Create: `internal/agents/executor.go`
+- Create: `internal/agents/executor_test.go`
+- Create: `pkg/models/agent.go`
+
+Defines `Executor` interface with `Execute(ctx, prompt, task)` method returning `AgentExecutionResult`. Includes mock implementation for testing.
+
+---
+
+## Task 2: Add Claude API Executor
+
+**Files:**
+- Modify: `internal/agents/executor.go`
+- Create: `internal/agents/claude.go`
+- Create: `internal/agents/claude_test.go`
+- Modify: `go.mod`
+
+Adds Anthropic SDK dependency. Implements `ClaudeExecutor` that calls Claude API with prompt + task context and checks acceptance criteria via completion signal detection.
+
+---
+
+## Task 3: Enhance Autopilot with Agent Execution
+
+**Files:**
+- Modify: `internal/orchestrator/autopilot.go`
+- Modify: `cmd/agentic-agent/autopilot.go`
+- Create: `internal/orchestrator/autopilot_test.go`
+
+Adds `enableAgentExecution` field and `--execute-agent` CLI flag. When enabled, the autopilot loop creates an executor, runs the agent with the context bundle, checks completion criteria, and completes the task automatically.
+
+---
+
+## Task 4: Create MCP Server Package
+
+**Files:**
+- Create: `.agentic/mcp-server/package.json`
+- Create: `.agentic/mcp-server/tsconfig.json`
+- Create: `.agentic/mcp-server/agentic-agent-server.ts`
+
+TypeScript MCP server exposing four tools:
+- `agentic_get_active_task` — Read session state
+- `agentic_task_show` — Execute CLI task show
+- `agentic_task_update_progress` — Update session progress
+- `agentic_task_complete` — Execute CLI task complete
+
+---
+
+## Task 5: Add Session Management Commands
+
+**Files:**
+- Create: `cmd/agentic-agent/session.go`
+- Modify: `internal/tasks/lock.go`
+
+Adds `session start`, `session stop`, and `session info` commands. Updates task claim to write session state to `.agentic/session.json`.
+
+---
+
+## Task 6: Documentation and Examples
+
+**Files:**
+- Create: `docs/AI_AGENT_EXECUTION.md`
+- Create: `examples/autopilot-with-ai/README.md`
+- Modify: `README.md`
+
+Documents autopilot with agent execution, MCP server setup, and usage with Claude.ai.
+
+---
+
+## Completion Checklist
+
+- Agent executor interface with mock and Claude implementations
+- Autopilot enhanced with `--execute-agent` flag
+- MCP server for ralph-loop integration
+- Session management commands (start, stop, info)
+- Documentation and examples
+- All tests passing
+- Integration tested with real API
+
+## Final Testing
+
+```bash
+# Run all tests
+go test ./... -v -short
+
+# Test autopilot dry run
+agentic-agent autopilot start --dry-run --max-iterations 1
+
+# Test MCP server compilation
+cd .agentic/mcp-server && npm run build
+
+# Test session commands
+agentic-agent session info
+```

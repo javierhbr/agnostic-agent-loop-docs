@@ -1,0 +1,233 @@
+---
+title: Ralph Loop Human Integration Design
+slug: /internal/ralph-loop-human-integration
+sidebar_label: Ralph Loop + MCP
+description: Design for bridging terminal CLI and AI chat interfaces via MCP server integration.
+---
+
+import { CalloutBox } from '@site/src/components/tom';
+
+<CalloutBox type="amber" label="Internal">
+  Architecture specs, design documents, and plans for contributors.
+</CalloutBox>
+
+## Problem Statement
+
+When a **human** executes `/ralph-loop` in Claude.ai (or similar AI chat interface), there are two separate contexts:
+
+1. **Terminal** — Where the human runs `agentic-agent` CLI commands
+2. **AI Chat** — Where Ralph loop executes with file access via MCP
+
+**Current workflow is disconnected:**
+
+```
+Terminal (Human)                     Claude.ai (AI)
+────────────────                     ──────────────
+$ agentic-agent task claim T1
+$ agentic-agent task show T1
+                                     Human: /ralph-loop "..."
+                                     Claude: [reads files via MCP]
+                                     Claude: [writes code]
+                                     Claude: <promise>COMPLETE</promise>
+$ agentic-agent task complete T1
+```
+
+**Problems:**
+- Ralph doesn't know which task is active in CLI
+- Ralph can't update task status automatically
+- Human must manually bridge the two contexts
+- No automatic commit capture or progress tracking
+- Token usage not integrated with CLI tracking
+
+## Design Goals
+
+1. **Bidirectional communication** between CLI and AI chat
+2. **Context awareness** — Ralph knows current task, specs, acceptance criteria
+3. **Automatic updates** — Task status syncs without manual commands
+4. **Progress tracking** — Commits and learnings captured automatically
+5. **Token awareness** — Checkpoint when approaching limits
+
+## Solution: MCP Server Integration
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Human's Setup                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  Terminal                          Claude.ai                 │
+│  ────────                          ────────                  │
+│  $ agentic-agent                   [AI Chat Interface]       │
+│    task claim T1                                             │
+│         │                                                     │
+│         ├──> Starts MCP Server     ◄────── Connects via MCP  │
+│         │    (background process)                            │
+│         │                                                     │
+│         └──> .agentic/session.json ◄────── Reads via MCP     │
+│              (active task state)                             │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+
+Session State Flow:
+─────────────────
+Terminal writes → .agentic/session.json → MCP server → Claude reads
+Claude writes  → MCP server → .agentic/session.json → Terminal reads
+```
+
+### Component 1: MCP Server for Agentic Agent
+
+A TypeScript MCP server that exposes agentic-agent operations including:
+- `agentic_get_active_task` — Get the currently active task from the CLI session
+- `agentic_task_show` — Get detailed information about a specific task
+- `agentic_task_update_progress` — Update task progress during ralph loop
+- `agentic_task_complete` — Mark task as complete with learnings
+- `agentic_get_token_status` — Get current token usage status
+- `agentic_create_checkpoint` — Create checkpoint for resumption
+
+### Component 2: Enhanced Task Claim with Session State
+
+When a task is claimed with `--with-mcp`, the CLI:
+1. Writes session state to `.agentic/session.json`
+2. Starts the MCP server in the background
+3. Outputs available MCP tools
+
+### Component 3: Enhanced Ralph Prompt with MCP Integration
+
+When human claims a task with `--with-mcp`, the CLI outputs a ready-to-use prompt for Claude that leverages MCP tools for automatic progress tracking.
+
+### Component 4: Ralph Loop Integration
+
+During the Ralph loop, Claude uses MCP tools to:
+- Get task details and acceptance criteria
+- Update progress after each iteration
+- Check token status periodically
+- Create checkpoints when approaching limits
+- Complete tasks with recorded learnings
+
+## CLI Commands
+
+### Setup
+
+```bash
+# Initialize MCP server
+agentic-agent init-mcp
+
+# Install dependencies
+cd .agentic/mcp-server && npm install
+```
+
+### Workflow
+
+```bash
+# 1. Claim task with MCP integration
+agentic-agent task claim TASK-123 --with-mcp
+
+# 2. Copy prompt to Claude.ai
+# (CLI outputs ready-to-use prompt)
+
+# 3. In Claude, run ralph-loop
+# (MCP tools auto-update session state)
+
+# 4. Monitor progress from terminal
+agentic-agent session watch
+
+# 5. Stop MCP server when done
+agentic-agent session stop
+```
+
+## Session Commands
+
+```bash
+# Watch session state in real-time
+agentic-agent session watch
+
+# Show current session info
+agentic-agent session info
+
+# Start MCP server manually
+agentic-agent session start
+
+# Stop MCP server
+agentic-agent session stop
+
+# Clear session state
+agentic-agent session clear
+```
+
+## Benefits
+
+1. **Seamless Integration** — Terminal and AI chat stay in sync
+2. **Automatic Updates** — No manual `task complete` needed
+3. **Progress Visibility** — Human sees updates in real-time
+4. **Token Awareness** — Auto-checkpoint when approaching limits
+5. **Learnings Captured** — AI can record learnings via MCP
+6. **Resume Friendly** — Session state persists for resumption
+
+## Configuration
+
+```yaml
+# agnostic-agent.yaml
+
+mcp:
+  enabled: true
+  server_script: ".agentic/mcp-server/agentic-agent-server.ts"
+  session_file: ".agentic/session.json"
+  auto_start: true  # Start MCP server on task claim
+
+session:
+  watch_interval: 2s  # How often to check for updates
+  checkpoint_on_token_limit: true
+```
+
+## Implementation Phases
+
+### Phase 1: MCP Server
+- Create TypeScript MCP server
+- Implement basic tools (get_active_task, task_show)
+- Test with Claude.ai
+
+### Phase 2: CLI Integration
+- Add `--with-mcp` flag to task claim
+- Write session state file
+- Start/stop MCP server commands
+
+### Phase 3: Progress Tracking
+- Implement `task_update_progress` tool
+- Add `session watch` command
+- Real-time terminal updates
+
+### Phase 4: Token Awareness
+- Integrate `get_token_status` tool
+- Auto-checkpoint on threshold
+- Resumption prompt generation
+
+## Open Questions
+
+1. **How to handle MCP server crashes?**
+   - Auto-restart on failure?
+   - Graceful degradation (continue without MCP)?
+
+2. **Multiple concurrent sessions?**
+   - One session per project?
+   - Session isolation by branch?
+
+3. **Security concerns?**
+   - MCP server has full CLI access
+   - Should we add permission prompts?
+
+4. **Cross-platform compatibility?**
+   - Windows support for MCP server?
+   - Alternative to npx/tsx?
+
+## Summary
+
+This design bridges the gap between human's terminal and AI chat by:
+
+- **MCP Server** — Exposes agentic-agent operations to Claude
+- **Session State** — Shared file keeps both contexts in sync
+- **Auto-Updates** — AI can update task status without human
+- **Token Tracking** — Integrated checkpoint/resume flow
+- **Ready-to-Use Prompts** — CLI generates optimal ralph prompts
+
+The human gets a **unified workflow** where terminal and AI chat work together seamlessly.

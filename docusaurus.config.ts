@@ -69,25 +69,13 @@ const config: Config = {
       items: [
         {
           type: 'dropdown',
-          label: 'Core Concepts',
+          label: 'Tutorials',
           position: 'right',
           items: [
-            { to: '/big-idea', label: 'The Big Idea' },
-            { to: '/tools', label: 'Tools & MCPs' },
-            { to: '/structure', label: 'Repository Structure' },
-            { to: '/usage-levels', label: 'Usage Levels' },
-            { to: '/layered-context', label: '3-Tier Layered Context' },
-          ],
-        },
-        {
-          type: 'dropdown',
-          label: 'Process',
-          position: 'right',
-          items: [
-            { to: '/lifecycle', label: 'Development Lifecycle' },
-            { to: '/agents', label: 'The Four Agents' },
-            { to: '/gates', label: 'The 5 Gates' },
-            { to: '/prompts', label: 'Example Prompts' },
+            { to: '/tutorials/getting-started', label: 'Getting Started' },
+            { to: '/agentic-agent-cli/quickstart', label: 'Quick Start' },
+            { to: '/tutorials/worktree-pr-workflow', label: 'Worktree PR Workflow' },
+            { to: '/tutorials/sdd-example-workflow', label: 'SDD Example Workflow' },
           ],
         },
         {
@@ -95,32 +83,12 @@ const config: Config = {
           label: 'How-to Guides',
           position: 'right',
           items: [
+            { to: '/how-to-guides/use-sdd-process', label: 'Use the SDD Process' },
             { to: '/small-projects', label: 'Small Projects' },
             { to: '/monorepo-openspec', label: 'Monorepo OpenSpec' },
             { to: '/prompting-guide', label: 'Prompting Guide' },
-          ],
-        },
-        {
-          type: 'dropdown',
-          label: 'Agentic Agent CLI',
-          position: 'right',
-          items: [
-            { to: '/agentic-agent-cli', label: 'Overview' },
-            { to: '/agentic-agent-cli/quickstart', label: 'Quick Start' },
-            { to: '/agentic-agent-cli/idea-refine', label: 'Idea Refinement' },
-            { to: '/agentic-agent-cli/installation', label: 'Installation' },
-            { to: '/agentic-agent-cli/configuration', label: 'Configuration' },
-            { to: '/agentic-agent-cli/commands', label: 'Commands' },
-            { to: '/agentic-agent-cli/skills', label: 'Skill Packs' },
-            { to: '/agentic-agent-cli/automation', label: 'Automation' },
-          ],
-        },
-        {
-          type: 'dropdown',
-          label: 'Explanation',
-          position: 'right',
-          items: [
-            { to: '/workflow-diagrams', label: 'Workflow Diagrams' },
+            { to: '/how-to-guides/avoid-common-antipatterns', label: 'Avoid Anti-Patterns' },
+            { to: '/how-to-guides/use-checkpoints-and-resume', label: 'Checkpoints & Resume' },
           ],
         },
         {
@@ -129,19 +97,29 @@ const config: Config = {
           position: 'right',
           items: [
             { to: '/cli-cheatsheet', label: 'CLI Cheat Sheet' },
+            { to: '/agentic-agent-cli/commands', label: 'Commands' },
+            { to: '/agentic-agent-cli/configuration', label: 'Configuration' },
+            { to: '/agentic-agent-cli/installation', label: 'Installation' },
+            { to: '/reference/unified-sdd-phases', label: 'SDD Phases' },
+            { to: '/reference/integrations', label: 'Integrations' },
           ],
         },
         {
           type: 'dropdown',
-          label: 'Operations',
+          label: 'Explanation',
           position: 'right',
           items: [
-            { to: '/roles', label: 'Roles & Responsibilities' },
-            { to: '/scaling', label: 'Scaling Guide' },
+            { to: '/big-idea', label: 'The Big Idea' },
+            { to: '/explanation/sdd-methodology', label: 'SDD Methodology' },
+            { to: '/layered-context', label: 'Layered Context' },
+            { to: '/lifecycle', label: 'Development Lifecycle' },
+            { to: '/agents', label: 'The Four Agents' },
+            { to: '/agentic-agent-cli/ralph-loop', label: 'Ralph Loop' },
+            { to: '/workflow-diagrams', label: 'Workflow Diagrams' },
           ],
         },
         {
-          href: 'https://github.com/your-org/agenticagent',
+          href: 'https://github.com/javierhbr/agnostic-agent-loop',
           label: 'GitHub',
           position: 'right',
         },
@@ -161,22 +139,21 @@ const config: Config = {
       style: 'light',
       links: [
         {
-          title: 'Docs',
+          title: 'Learn',
           items: [
-            { label: 'Introduction',  to: '/'          },
-            { label: 'The Big Idea',  to: '/big-idea'  },
-            { label: 'Tools & MCPs',  to: '/tools'     },
-            { label: 'Lifecycle',     to: '/lifecycle' },
-            { label: 'Agents',        to: '/agents'    },
+            { label: 'Introduction',     to: '/' },
+            { label: 'Getting Started',  to: '/tutorials/getting-started' },
+            { label: 'Quick Start',      to: '/agentic-agent-cli/quickstart' },
+            { label: 'Field Guide',      to: '/field-guide' },
           ],
         },
         {
-          title: 'Reference',
+          title: 'Guides & Reference',
           items: [
-            { label: 'Roles',       to: '/roles'    },
-            { label: 'Exit Gates',  to: '/gates'    },
-            { label: 'Prompts',     to: '/prompts'  },
-            { label: 'Scaling',     to: '/scaling'  },
+            { label: 'CLI Cheat Sheet',  to: '/cli-cheatsheet' },
+            { label: 'Commands',         to: '/agentic-agent-cli/commands' },
+            { label: 'Small Projects',   to: '/small-projects' },
+            { label: 'SDD Methodology',  to: '/explanation/sdd-methodology' },
           ],
         },
         {

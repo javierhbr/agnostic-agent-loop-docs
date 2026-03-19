@@ -1,0 +1,153 @@
+---
+title: 3-Tier Layered Context Model
+slug: /layered-context
+description: Route → skill → resource. Load only what the task needs and nothing else.
+---
+
+import { SectionHeader, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="09"
+  title="3-Tier Layered Context Model"
+  desc="Stop front-loading every file. Route to the right skill, then pull depth only when the task asks for it."
+/>
+
+## What this solves
+
+- Agents were loading ~1,100 lines to write a 90-line unit test: root `AGENTS.md`, a full testing skill, and pages of unused examples. ~92% of the context was noise, paid for on every request.
+- Drift symptoms: generic best-practice answers, steps out of order, different outputs for the same prompt, and teams arguing about prompt wording instead of fixing the architecture.
+- Hotfix vs. standard release instructions blended because both lived in every session's context; the agent averaged across conflicting sources and sounded confident while being wrong.
+
+<CalloutBox type="teal" label="Golden rule">
+  Load what you need, nothing else.
+</CalloutBox>
+
+## The rule: three tiers, three load moments
+
+| Tier | Purpose | Size target | When it loads | Contents |
+|---|---|---|---|---|
+| **1 — Router** | Map triggers to skills; never hold detail | 53–70 lines | Once per session | One line per skill, project overview, output preferences |
+| **2 — Skill** | Exact steps for a task | 54–130 lines | When trigger matches | Task steps, done definition, links to resources |
+| **3 — Resource** | Deep templates, examples, edge cases | 150–500 lines | Only when requested or linked mid-task | Templates, questionnaires, full examples, edge-case playbooks |
+
+Routers never grow; skills stay lean; anything that needs more than a couple of sentences belongs in a resource file.
+
+## Refactor checklist
+
+1. **Slim the router**: keep routing lines and always-needed project prefs only. No workflows, checklists, or templates inline.
+2. **Trim every skill**: steps, outputs, and links. If a section needs more than a short paragraph, move it to Tier 3.
+3. **Push detail down**: templates, long examples, questionnaires, and edge cases live in `resources/` files per skill.
+4. **Apply to root instructions**: treat `.CLAUDE.md` / `AGENTS.md` as Tier 1. Link out to per-skill or per-domain files instead of embedding them.
+5. **Route by intent, not regex**: triggers should be specific (e.g., `"api-docs"`, `"hotfix"`, `"platform-spec"`) so only the right skill loads.
+
+## Examples
+
+**API docs skill**
+
+```text
+Bloated: api-docs/SKILL.md = 450 lines loaded on every trigger (REST, GraphQL, gRPC templates, 40 examples, style guide).
+3-tier: SKILLS.md 53 lines → api-docs/SKILL.md 58 lines → resource files only when a template is requested. ~92% baseline token drop.
+```
+
+**Hotfix vs. standard release**
+
+- Before: hotfix steps in `sdd/hotfix/SKILL.md`, but standard release steps also lived in a shared conventions file that loaded everywhere. Outputs blended both flows.
+- After: router points to `hotfix/SKILL.md` only; release guidance lives in its own skill and resource files. Asking for a hotfix loads nothing else.
+
+## Health signals
+
+| State | Router | Skill | Resource | Hygiene |
+|---|---|---|---|---|
+| 🟢 Healthy | 50–70 lines | 54–130 | 150–500 | Zero broken links; touched &lt; 1 month ago |
+| 🟡 Attention | 80–100 | 130–180 | 450–550 | 1–2 broken links; touched 1–2 months ago |
+| 🔴 Critical | 100+ | 180+ | 800+ | 3+ broken links; untouched 3+ months |
+
+## Monthly 15-minute habit
+
+```bash
+# Router sizes — keep them lean
+wc -l internal/skills/packs/SKILLS.md internal/skills/packs/sdd/SKILLS.md
+
+# Skill files — everything under 130 lines
+find internal/skills/packs -name "SKILL.md" -exec wc -l {} + | sort -rn | head -5
+
+# Resource files — flag anything over 500 lines
+find internal/skills/packs -path "*/resources/*.md" -exec wc -l {} + | awk '$1 > 500 {print}'
+```
+
+## Outcomes we measured
+
+- ~92% baseline token reduction after refactoring 19 skills and creating 16 resource files; average skill size settled around 85 lines.
+- Precision improved: with 111 focused lines instead of 700 mixed lines, agents followed steps in order and stopped blending unrelated policies.
+- Maintainability improved: small skills are easy to audit, and resource files can grow without polluting every session.
+
+## How to decide where new content lives
+
+- If it fits in one or two sentences, keep it in the skill (Tier 2).
+- If it needs a template, multi-step checklist, or long example, move it to a resource file (Tier 3) and link to it.
+- Never add detail to the router; add a link instead.
+
+## Implementation in this project
+
+### Current state
+
+| Tier | Asset | Count | Size range |
+|---|---|---|---|
+| **Tier 1: Routers** | `SKILLS.md` files | 2 | 53-59 lines |
+| **Tier 2: Skill files** | `SKILL.md` per skill | 19 | 54-118 lines (avg 85) |
+| **Tier 3: Resource files** | `resources/*.md` | 16 | 150-500 lines (5,986 total) |
+
+### File structure
+
+```text
+internal/skills/packs/
+├─ SKILLS.md               (Tier 1 router)
+├─ sdd/
+│  ├─ SKILLS.md             (Tier 1 sub-router)
+│  └─ [skill-name]/
+│     ├─ SKILL.md           (Tier 2)
+│     └─ resources/         (Tier 3)
+├─ openspec/
+│  ├─ SKILL.md
+│  └─ resources/
+│     └─ phases.md
+└─ [other skills]/
+   ├─ SKILL.md
+   └─ resources/
+```
+
+## Common workflows
+
+### Adding a new skill
+
+1. Create skill folder under the appropriate pack.
+2. Write `SKILL.md` (60-70 lines target).
+3. Add one routing line to the parent `SKILLS.md`.
+4. Create `resources/` directory if templates or examples are needed.
+5. Test with an agent to verify the trigger loads only the right content.
+
+### When a skill file grows too large
+
+1. Identify sections exceeding a short paragraph.
+2. Extract those sections to `resources/` files.
+3. Replace with a link to the resource.
+4. Verify the skill file is back under 130 lines.
+
+## FAQ
+
+**Q: Why not keep everything in one file?**
+A: You get router bloat (200-500 lines), 80% token waste, and agents that average across conflicting sources.
+
+**Q: When should I split a resource file?**
+A: When it exceeds 500 lines or covers 3+ logically distinct topics.
+
+**Q: Can I have nested resource files?**
+A: No. Keep the structure flat: `skill/resources/topic.md`.
+
+**Q: Can I apply this model to other projects?**
+A: Yes. The model is framework-agnostic. Adapt the tier sizes and paths to your project structure.
+
+<CalloutBox type="amber" label="Architectural intent">
+  The model keeps depth without bloat. Sessions start with a sharp briefing, pull detail only when needed, and stay immune to cross-contamination between unrelated flows.
+</CalloutBox>
+

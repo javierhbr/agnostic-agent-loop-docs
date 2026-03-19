@@ -1,5 +1,4 @@
 ---
-id: monorepo-openspec
 title: Monorepo OpenSpec
 slug: /monorepo-openspec
 description: How to run OpenSpec in a monorepo with package-local specs and centralized change tracking.
@@ -22,8 +21,11 @@ import { SectionHeader, CalloutBox } from '@site/src/components/tom';
 1. One root `agnostic-agent.yaml` enables multi-path spec discovery.
 2. Specs live near code: `packages/*/specs/` (and optionally `apps/*/specs/`, `specs/`).
 3. OpenSpec changes track centrally: `.agentic/openspec/changes/`.
-4. Teams implement in parallel per package.
-5. Prompts help with integration and sequencing: [/prompting-guide](/prompting-guide).
+4. CLI auto-discovers all specs across packages.
+5. Teams implement in parallel per package.
+6. Prompts help with integration and sequencing: [/prompting-guide](/prompting-guide).
+
+**Core boundary rule:** Component repos (individual packages) use OpenSpec ONLY. Platform-level tooling (BMAD, Speckit) stays in the platform repo. Use `platform-ref.yaml` in component repos to reference platform alignment without importing platform tools.
 
 ## One-Time Setup
 
@@ -331,6 +333,90 @@ BLOCKERS & RISKS:
 
 </details>
 
+## Workflow: From Spec to Production
+
+### Day 1: Define spec
+
+```bash
+cat > packages/service-a/specs/auth-oauth.md << 'EOF'
+# OAuth Integration
+...
+EOF
+
+agentic-agent openspec init "OAuth Integration" \
+  --from packages/service-a/specs/auth-oauth.md
+```
+
+Use Prompt #1 (Spec Review) to decompose into tasks.
+
+### Days 2-5: Implement
+
+```bash
+agentic-agent task claim <task-id>
+cd packages/service-a
+# ... edit src/auth/*.ts, add tests ...
+npm test
+cd ../..
+agentic-agent task complete <task-id>
+```
+
+Use Prompt #2 (Package-Specific) to guide each implementation.
+
+### Day 6: Integrate (if multi-package)
+
+```bash
+agentic-agent openspec list
+cd packages/service-b
+# ... implement integration ...
+# Verify integration with Prompt #3 (Integration)
+```
+
+### Day 7: Verify and complete
+
+```bash
+agentic-agent openspec show oauth-integration
+# Use Prompt #5 (Verification) to ensure all criteria met
+agentic-agent openspec complete oauth-integration
+agentic-agent openspec archive oauth-integration
+```
+
+## Multi-Service Example: Payment Flow
+
+```text
+packages/
+├── billing-service/
+│   └── specs/
+│       └── subscription-billing.md
+├── payments-service/
+│   └── specs/
+│       └── payment-processing.md
+└── customer-api/
+    └── specs/
+        └── billing-endpoints.md
+```
+
+```bash
+# Day 1: Define specs for all three services
+agentic-agent openspec init "Subscription Billing" \
+  --from packages/billing-service/specs/subscription-billing.md
+
+agentic-agent openspec init "Payment Processing" \
+  --from packages/payments-service/specs/payment-processing.md
+
+agentic-agent openspec init "Billing API Endpoints" \
+  --from packages/customer-api/specs/billing-endpoints.md
+
+# Days 2-5: Implement in parallel (one team per service)
+
+# Day 6: Integration testing
+# Use Prompt #3 (Integration) to verify contracts between services
+
+# Day 7: Verify all three
+agentic-agent openspec complete subscription-billing
+agentic-agent openspec complete payment-processing
+agentic-agent openspec complete billing-endpoints
+```
+
 ## CLI Reference (Common)
 
 | Command | Purpose |
@@ -357,9 +443,30 @@ The first match wins (based on `specDirs` ordering). Avoid collisions by namespa
 
 No. Create OpenSpec changes when you want lifecycle tracking. For tiny work, use tasks only.
 
+### Can I organize specs differently?
+
+Yes. Update `specDirs` in agnostic-agent.yaml:
+
+```yaml
+paths:
+  specDirs:
+    - docs/specs            # Centralized specs
+    - packages/*/specs      # Package-level overrides
+```
+
+### How do I handle cross-package dependencies?
+
+Use Prompt #6 (Dependency Analysis) from [/prompting-guide](/prompting-guide) to determine order. Then: Service A starts first (provider), Service B waits for A's API to stabilize, Service C integrates both.
+
 ### What if requirements change during implementation?
 
-Update the spec file and regenerate/update tasks by re-running `openspec init`.
+Update the spec file directly, then regenerate tasks:
+
+```bash
+vim packages/service-a/specs/auth-oauth.md
+agentic-agent openspec init "OAuth Integration" \
+  --from packages/service-a/specs/auth-oauth.md
+```
 
 ## Next
 

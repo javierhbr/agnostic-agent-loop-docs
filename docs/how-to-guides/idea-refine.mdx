@@ -1,0 +1,319 @@
+---
+title: Idea Refinement (Examples)
+slug: /agentic-agent-cli/idea-refine
+description: "Examples that turn vague inputs into a PRD, a phased plan, and testable acceptance criteria."
+---
+
+import { SectionHeader, TabPanel, CalloutBox } from '@site/src/components/tom';
+import CodeBlock from '@theme/CodeBlock';
+
+<SectionHeader
+  num="14g"
+  title="Idea Refinement (Examples)"
+  desc="Four common starting points. Same pipeline: product-wizard -> dev-plans -> atdd -> code-simplification."
+/>
+
+<CalloutBox type="teal" label="Diataxis">
+  How-to. Use this when your input is messy (vague idea, bullets, existing process, or refactor constraints) and you want a clear spec before coding.
+</CalloutBox>
+
+## The pipeline
+
+```text
+Vague input
+  -> product-wizard (discovery + PRD)
+  -> dev-plans (phases + checkpoints)
+  -> atdd (test scenarios from ACs)
+  -> code-simplification (remove vague/over-complex language)
+```
+
+## Quick prompt templates
+
+```text title="Start from a vague idea"
+Use the product-wizard skill to create a PRD for [idea].
+
+Problem: [what problem?]
+Users: [who needs this?]
+Current state: [how they do it now?]
+Success: [measurable outcome]
+Constraints: [timeline/budget/tech limits]
+Out of scope: [explicit exclusions]
+```
+
+```text title="Turn a PRD into an implementation plan"
+Use the dev-plans skill to break this PRD into phases with checkpoints.
+
+[paste PRD or reference file location]
+```
+
+```text title="Make acceptance criteria testable"
+Use the atdd skill to show test scenarios for these acceptance criteria:
+
+- [Criterion 1]
+- [Criterion 2]
+```
+
+```text title="Simplify a complex requirement"
+Use the code-simplification skill to rewrite this requirement in simpler,
+testable language and call out ambiguities:
+
+"[paste requirement]"
+```
+
+<div className="tom-idea-refine">
+  <TabPanel
+    tabs={[
+      {
+        id: "vague",
+        label: "01 Vague Idea",
+        content: (
+          <>
+            <h3>Scenario</h3>
+            <p>
+              NotifyHub (B2B SaaS) wants mobile push notifications, but the request is vague and success is undefined.
+            </p>
+
+            <h3>Initial prompt</h3>
+            <CodeBlock language="text">{`I have an idea for mobile push notifications for our project management platform.
+We currently only have email notifications and users are missing important updates.
+
+Can you help me create a comprehensive PRD using the product-wizard skill?`}</CodeBlock>
+
+            <h3>Follow-ups</h3>
+            <div className="tom-idea-refine__stack">
+              <CodeBlock language="text">{`Now that we have a PRD, can you create a development plan using the dev-plans skill?
+Please break this into phases with clear review checkpoints.`}</CodeBlock>
+              <CodeBlock language="text">{`For task [TASK-ID], please generate acceptance tests using the atdd skill.
+I want to ensure we test the acceptance criteria before implementing the feature.`}</CodeBlock>
+            </div>
+
+            <div className="tom-idea-refine__outputs">
+              <details className="tom-idea-refine__details">
+                <summary>Example output (PRD excerpt)</summary>
+
+                <div className="tom-idea-refine__detailsBody">
+                  <CodeBlock language="markdown" title="prd-mobile-notifications.md (excerpt)">{`# Product Requirements Document: Mobile Push Notifications
+
+## Executive Summary
+
+NotifyHub will implement browser-based push notifications to help Project Managers stay informed of critical project events without relying on email. This MVP focuses on 4 high-priority notification types delivered via Progressive Web App technology, targeting 50% adoption amongst Project Managers within 2 weeks of launch.
+
+**Timeline:** 8 weeks
+**Target Users:** Project Managers (primary), Team Members (Phase 2)
+**Success Metric:** 30% daily active notification interaction rate
+
+## User Story (example)
+
+### US-2: Task Assignment Notifications
+
+**As a** Project Manager
+**I want to** receive a push notification when a task is assigned to me
+**So that** I can prioritize new work immediately
+
+**Acceptance Criteria:**
+- [ ] Notification appears within 30 seconds of task assignment
+- [ ] Notification shows task title and assigner name
+- [ ] Clicking notification opens the task detail page
+- [ ] Works on desktop and mobile browsers
+
+## Functional Requirements (example)
+
+| Event | Trigger Condition | Recipient |
+|---|---|---|
+| Task Assigned | Task assigned to user | Assignee |
+| Deadline Approaching | 24 hours before project deadline | PM + team members |
+| @Mentioned | User @mentioned in comment | Mentioned user |
+| Task Blocker | Task marked as blocked | Project Manager |
+
+## Technical Approach (sketch)
+
+User Browser                Push Service               Backend
+    |-- Request Permission ----->|
+    |<-- Grant Permission -------|
+    |-- Send Subscription ------>|--------------------->
+    |<-- Push Notification ------|`}</CodeBlock>
+                </div>
+
+              </details>
+
+              <details className="tom-idea-refine__details">
+                <summary>Example output (plan excerpt)</summary>
+
+                <div className="tom-idea-refine__detailsBody">
+                  <CodeBlock language="markdown" title="dev-plan.md (excerpt)">{`# Development Plan: Mobile Push Notifications
+
+### Phase 1: Infrastructure Setup (Weeks 1-3)
+- Service worker registration + push event listener
+- Browser permission flow
+- Push subscription management (frontend + backend API)
+
+STOP: Phase 1 Review Checkpoint
+- Verify service worker works across target browsers
+- Confirm subscriptions persist in database
+
+### Phase 2: Notification Triggers & Delivery (Weeks 4-6)
+- Trigger detection (assignment, deadline, mentions, blockers)
+- Delivery queue + retries
+- Click handling (deep links)
+
+STOP: Phase 2 Review Checkpoint
+- Send test notifications for all event types
+- Confirm delivery within SLA`}</CodeBlock>
+                </div>
+
+              </details>
+
+              <details className="tom-idea-refine__details">
+                <summary>Example output (ATDD excerpt)</summary>
+
+                <div className="tom-idea-refine__detailsBody">
+                  <CodeBlock language="javascript" title="acceptance-tests.md (excerpt)">{`it('should deliver notification within 30 seconds of task assignment', async () => {
+  const projectManager = await createUser({ role: 'PM' });
+  await enableNotifications(projectManager);
+
+  const startTime = Date.now();
+  await assignTask({ assignee: projectManager.id, title: 'Update landing page' });
+
+  const notification = await waitForNotification(projectManager.id, { timeout: 30000 });
+  const deliveryTime = Date.now() - startTime;
+
+  expect(notification).toBeDefined();
+  expect(deliveryTime).toBeLessThan(30000);
+});`}</CodeBlock>
+                </div>
+
+              </details>
+            </div>
+          </>
+        ),
+      },
+      {
+        id: "requirements",
+        label: "02 Requirements List",
+        content: (
+          <>
+            <h3>Scenario</h3>
+            <p>
+              FinFlow has an unprioritized bullet list with conflicts (email vs Slack) and vague terms (fast, easy).
+            </p>
+
+            <h3>Initial prompt</h3>
+            <CodeBlock language="text">{`I have a requirements list for expense approval automation. Some items conflict
+and some are vague. Can you help me turn this into a structured PRD using the
+product-wizard skill?
+
+[Attach or paste initial-requirements.md]`}</CodeBlock>
+
+            <details className="tom-idea-refine__details">
+              <summary>Example output</summary>
+
+              <div className="tom-idea-refine__detailsBody">
+                <CodeBlock language="markdown" title="prd-expense-approval.md">{`# PRD: Expense Approval Automation
+
+FinFlow Solutions will automate expense approvals to reduce approval time from 3 days to 4 hours. The system uses amount-based routing ($100/$5K thresholds), integrates with QuickBooks, and notifies approvers via Slack with email fallback.
+
+## Approval Routing Rules
+
+| Amount | Approver | SLA |
+|---|---|---|
+| <$100 | Automatic | Instant |
+| $100-$5,000 | Direct Manager | 24 hours |
+| >$5,000 | CFO | 48 hours |`}</CodeBlock>
+              </div>
+
+            </details>
+          </>
+        ),
+      },
+      {
+        id: "logic",
+        label: "03 Existing Logic",
+        content: (
+          <>
+            <h3>Scenario</h3>
+            <p>
+              TechSupport wants to automate a manual routing spreadsheet, but must preserve business rules and edge cases.
+            </p>
+
+            <h3>Initial prompt</h3>
+            <CodeBlock language="text">{`We have a manual customer support routing process that we want to automate.
+I've documented the current workflow. Can you help me create a PRD using the
+product-wizard skill that preserves our business logic?
+
+Current process: [attach current-process.md]`}</CodeBlock>
+
+            <details className="tom-idea-refine__details">
+              <summary>Example output</summary>
+
+              <div className="tom-idea-refine__detailsBody">
+                <CodeBlock language="markdown" title="prd-workflow-automation.md">{`# PRD: Support Ticket Routing Automation
+
+## Preservation Requirements
+- All 15 existing routing rules must work identically
+- VIP customer handling preserved
+- Escalation paths unchanged
+- After-hours logic maintained`}</CodeBlock>
+              </div>
+
+            </details>
+          </>
+        ),
+      },
+      {
+        id: "refactor",
+        label: "04 Refactor / Legacy Code",
+        content: (
+          <>
+            <h3>Scenario</h3>
+            <p>
+              PaymentPro needs a refactor with zero regressions plus new payment methods. The first job is to separate “must preserve” from “can change”.
+            </p>
+
+            <h3>Initial prompt</h3>
+            <CodeBlock language="text">{`Our payment system code is complex and needs refactoring. I've described the
+current system and what we want to change. Can you help create a PRD for this
+refactoring project using the product-wizard skill?
+
+Current system: [describe payment flow]
+Must preserve: [existing payment methods]
+Want to add: [new capabilities]`}</CodeBlock>
+
+            <details className="tom-idea-refine__details">
+              <summary>Example output</summary>
+
+              <div className="tom-idea-refine__detailsBody">
+                <CodeBlock language="markdown" title="prd-payment-refactor.md">{`# PRD: Payment System Refactoring
+
+## Must Preserve
+- Stripe credit/debit card processing
+- ACH bank transfers
+- PayPal integration
+- Existing API contracts
+
+## Success Criteria
+- 100% of existing payment tests pass
+- Zero payment failures during migration`}</CodeBlock>
+              </div>
+
+            </details>
+          </>
+        ),
+      },
+    ]}
+  />
+</div>
+
+## If you want these inside `agentic-agent prompts`
+
+This repo keeps the examples as documentation. If you want them discoverable from the CLI, a practical packaging is:
+
+1. Add a prompt category (for example: `idea-refine`).
+2. Add four prompt entries (for example: `vague-idea`, `requirements-list`, `existing-logic`, `refactor-legacy`).
+3. Point each entry to the copy/paste “Initial prompt” blocks above.
+
+That gives you a stable command surface like:
+
+```bash
+agentic-agent prompts list --category idea-refine
+agentic-agent prompts show idea-refine/vague-idea
+```

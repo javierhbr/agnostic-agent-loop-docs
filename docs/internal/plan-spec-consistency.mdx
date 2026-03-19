@@ -1,0 +1,150 @@
+---
+title: Spec Consistency Validation System Plan
+slug: /internal/plan-spec-consistency
+sidebar_label: Plan - Spec Validation
+description: Implementation plan for ensuring tasks have proper spec files through hybrid validation with warnings, auto-generation, and skip options.
+---
+
+import { CalloutBox } from '@site/src/components/tom';
+
+<CalloutBox type="amber" label="Internal">
+  Architecture specs, design documents, and plans for contributors.
+</CalloutBox>
+
+**Goal:** Ensure tasks always have proper spec files through hybrid validation with warnings, auto-generation, manual creation, and skip options - guided by agent-friendly CLI output.
+
+**Architecture:** Extend existing readiness system with spec generator, add lifecycle hooks at task create/claim, provide new spec management commands, and include agent-guiding messages in CLI output.
+
+**Tech Stack:** Go 1.21+, Cobra CLI, Bubble Tea (interactive prompts), existing specs/tasks packages, YAML config
+
+---
+
+## Task 1: Add Configuration Fields for Spec Validation
+
+**Files:**
+- Modify: `pkg/models/config.go`
+- Test: `pkg/models/config_test.go` (new file)
+
+Adds `ValidateSpecsOnClaim` and `SpecValidationMode` (`"warn"` | `"block"` | `"silent"`) fields to `WorkflowConfig`.
+
+---
+
+## Task 2: Create Spec Generator Package Structure
+
+**Files:**
+- Create: `internal/specs/generator.go`
+- Create: `internal/specs/generator_test.go`
+- Create: `internal/specs/templates.go`
+
+Implements `SpecGenerator` with smart context detection:
+1. **Priority 1:** Look for PRD files matching task's change ID
+2. **Priority 2:** Interactive prompts if running in TTY
+3. **Priority 3:** Fallback to task metadata
+
+Supports generating from PRD content, interactive prompts, or task description/acceptance criteria.
+
+---
+
+## Task 3: Enhance Readiness Checks for Spec Completeness
+
+**Files:**
+- Modify: `internal/tasks/readiness.go`
+- Modify: `internal/tasks/readiness_test.go`
+
+Adds `spec-completeness` check that resolves all spec refs and reports missing ones. This is a warning-only check (does not set `Ready=false`).
+
+---
+
+## Task 4: Add Agent-Guiding Output to ClaimTaskWithConfig
+
+**Files:**
+- Modify: `internal/tasks/lock.go`
+
+Updates `FormatReadinessResult` to include structured agent guidance when specs are missing:
+- Option 1: Auto-generate specs
+- Option 2: Generate with user interaction
+- Option 3: Create specs manually
+- Option 4: Skip validation and proceed
+
+---
+
+## Task 5: Add spec generate Command Structure
+
+**Files:**
+- Create: `cmd/agentic-agent/spec.go`
+
+Adds `spec` command with subcommands:
+- `spec generate TASK_ID` — Generate missing specs (with `--auto`, `--interactive`, `--from-prd` flags)
+- `spec create SPEC_REF` — Create a new spec file with template
+- `spec validate [TASK_ID]` — Validate spec completeness
+
+---
+
+## Task 6: Add --skip-validation Flag to task claim
+
+**Files:**
+- Modify: `cmd/agentic-agent/task.go`
+
+Adds `--skip-validation` flag that bypasses readiness checks during task claim.
+
+---
+
+## Task 7: Add Validation Hook to Task Create
+
+**Files:**
+- Modify: `cmd/agentic-agent/task.go`
+- Modify: `cmd/agentic-agent/openspec.go`
+
+Adds spec validation warnings after task creation and bulk validation after openspec task creation, with structured agent guidance.
+
+---
+
+## Task 8: Update CLAUDE.md Template with Spec Workflow
+
+**Files:**
+- Modify: `internal/skills/templates/claude-rules.tmpl`
+
+Adds Spec Validation Workflow section and Spec Management Commands to the agent rules template.
+
+---
+
+## Task 9: Add Integration Tests
+
+**Files:**
+- Create: `test/integration/spec_validation_test.go`
+
+End-to-end test covering: task creation with missing specs, claim showing validation warnings, spec generation, and successful re-claim.
+
+---
+
+## Task 10: Update Documentation
+
+**Files:**
+- Modify: `README.md`
+- Create: `docs/spec-validation.md`
+
+Documents the spec validation system, smart context detection, available commands, agent behavior, and best practices.
+
+---
+
+## Task 11: Final Integration and Testing
+
+Build project, run full test suite, manual end-to-end testing of the complete workflow.
+
+---
+
+## Completion Checklist
+
+- Config fields added and tested
+- SpecGenerator implemented with context detection
+- Readiness checks enhanced
+- Agent-guiding output added
+- `spec generate` command working
+- `spec create` command working
+- `spec validate` command working
+- `--skip-validation` flag working
+- Task create lifecycle hooks added
+- CLAUDE.md template updated
+- Integration tests passing
+- Documentation complete
+- Manual E2E testing successful

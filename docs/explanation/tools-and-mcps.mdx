@@ -1,0 +1,120 @@
+---
+title: Tools & MCPs
+slug: /tools
+description: Two MCP servers, four agents, zero overhead services.
+---
+
+import { SectionHeader, ToolCard, LayerStack, CalloutBox } from '@site/src/components/tom';
+import styles from '@site/src/components/tom/tom.module.css';
+
+<SectionHeader
+  num="01"
+  title="Two MCPs, Four Agents"
+  desc="Two MCP server types carry governed knowledge. Four Markdown agents carry the process. No routers, no gate validators, no extra services."
+/>
+
+<div className={`${styles.toolsGrid} fi`}>
+
+<ToolCard
+  accent="rust"
+  badge="Platform MCP"
+  icon="⬟"
+  title="Platform Intelligence"
+  layer="1 instance per org · reads openclaw-specs/ · 4 tools only"
+  desc="Platform-level source of truth for context packs, templates with embedded gates, agent definitions, and workflow config."
+  items={[
+    'get_context_pack(intent) → risk_level + policies + workflow',
+    'get_template(name) → template with embedded exit gate',
+    'get_agent(name) → analyst / architect / developer / verifier',
+    'get_workflow(risk_level) → which agent sequence to run',
+  ]}
+/>
+
+<ToolCard
+  accent="teal"
+  badge="Component MCP"
+  icon="◈"
+  title="Component Knowledge"
+  layer="N instances · same image · per-component configuration"
+  desc="Local truth for a component: contracts, invariants, patterns, and decisions."
+  items={[
+    'get_contracts() → topics, endpoints, event schemas',
+    'get_invariants() → immutable business rules',
+    'get_patterns() → approved implementation patterns',
+    'get_decisions() → ADRs and technical history',
+  ]}
+/>
+
+<ToolCard
+  accent="navy"
+  badge="4 Agents"
+  icon="▤"
+  title="Development Workflow"
+  layer="Markdown files in .claude/agents/ · loaded on demand"
+  desc="Gates are inside agent checklists. Agents self-verify before handoff."
+  items={[
+    'analyst.md → discovery and affected component mapping (full workflow)',
+    'architect.md → feature spec + component specs per domain',
+    'developer.md → impl spec + tasks + code (parallel per component)',
+    'verifier.md → AC evidence, sign-offs, merge hard stop',
+  ]}
+/>
+
+</div>
+
+<SectionHeader
+  num="02"
+  title="How the Layers Flow"
+  desc="Knowledge at the top feeds specs in the middle, which drive code at the bottom."
+/>
+
+<LayerStack
+  layers={[
+    {
+      bg: 'k',
+      label: 'Knowledge Layer',
+      sub: 'MCP servers · governed context',
+      pills: [
+        { text: 'Platform Policies', type: 'k' },
+        { text: 'Domain Models', type: 'k' },
+        { text: 'Integration Contracts', type: 'k' },
+        { text: 'Component Context', type: 'k' },
+      ],
+    },
+    {
+      bg: 's',
+      label: 'Spec Layer',
+      sub: 'agents · two repos',
+      pills: [
+        { text: 'Platform Specs', type: 's' },
+        { text: 'Component Specs', type: 's' },
+        { text: 'Contract Specs', type: 's' },
+        { text: 'ADRs', type: 's' },
+      ],
+    },
+    {
+      bg: 'c',
+      label: 'Code Layer',
+      sub: 'implementation',
+      pills: [
+        { text: 'Services', type: 'c' },
+        { text: 'APIs', type: 'c' },
+        { text: 'Infrastructure', type: 'c' },
+      ],
+    },
+    {
+      bg: 'o',
+      label: 'Observability',
+      sub: 'runtime signals',
+      pills: [
+        { text: 'Logs', type: 'o' },
+        { text: 'Metrics', type: 'o' },
+        { text: 'Traces', type: 'o' },
+      ],
+    },
+  ]}
+/>
+
+<CalloutBox type="teal" label="Dependency rule">
+  Context Pack is assembled before spec writing. Execution happens only against approved specs, and observability feeds back into the knowledge layer for the next initiative.
+</CalloutBox>

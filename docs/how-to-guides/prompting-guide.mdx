@@ -1,5 +1,4 @@
 ---
-id: prompting-guide
 title: Prompting Guide
 slug: /prompting-guide
 description: Prompt templates for using AI agents with OpenSpec, Platform, and SDD Full workflows.
@@ -293,6 +292,65 @@ WHEN STUCK:
 
 </details>
 
+<details>
+  <summary>Prompt: Integration (cross-package)</summary>
+
+```text
+I'm integrating [feature] across:
+- packages/service-a (provider)
+- packages/service-b (consumer)
+
+Current status:
+- Service A: [status]
+- Service B: [status]
+
+What needs to happen in service-b?
+- API contract
+- Error handling
+- Token refresh strategy
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Dependency analysis (multi-service)</summary>
+
+```text
+Specs across packages:
+- packages/a/specs/[spec-1].md (provider)
+- packages/b/specs/[spec-2].md (consumer)
+
+What's the implementation order?
+- Which package starts first?
+- What's the contract?
+- What if B deployed before A?
+
+Show dependency graph + rollout strategy.
+```
+
+</details>
+
+<details>
+  <summary>Prompt: Documentation generation</summary>
+
+```text
+Generate documentation for [feature].
+
+Based on: packages/[service]/specs/[spec].md
+
+Sections:
+1. Overview
+2. API reference
+3. Token lifecycle
+4. Error handling
+5. Testing locally
+6. Troubleshooting
+
+Format: Markdown with code examples.
+```
+
+</details>
+
 ### CLI glue (OpenSpec)
 
 ```bash
@@ -482,6 +540,62 @@ Format as Markdown.
 ```
 
 </details>
+
+<details>
+  <summary>Prompt: Plan phase -- design and task generator (Architect)</summary>
+
+```text
+You are an Architect running the Plan phase from a delta spec.
+
+DELTA SPEC:
+[Paste the delta spec for this service here]
+
+Generate:
+
+1) design.md
+   - Data Model: SQL schema for any new tables
+   - Code Changes: Exact functions/modules to create/modify
+   - Edge Cases: Table with 4+ edge case scenarios and handling
+   - Observability: Logging, metrics, tracing specs
+   - Rollout Plan: Feature flag strategy, canary rollout
+
+2) tasks.md
+   - Decompose into 8-10 actionable tasks
+   - Group by component (Backend, Frontend, Testing)
+   - For each task: what you'll modify, acceptance criteria
+   - List dependencies (Task 3 depends on Task 1)
+
+Each task should be completable in 1-3 days by one developer.
+```
+
+</details>
+
+## Prompt Workflow by Role
+
+### Team Lead (Assess, Deliver)
+
+1. Use [/usage-levels](/usage-levels) to decide level.
+2. Assess: use the Analyst interview guide prompt to gather evidence.
+3. Deliver: use the Verifier evidence plan prompt.
+4. Use CLI to track progress and mark complete.
+
+### Product / PM (Specify)
+
+1. Use the OpenSpec proposal+tasks prompt or the Architect spec generator prompt.
+2. Use CLI to create/update specs.
+3. Hand off to Architect for Plan phase.
+
+### Architect (Platform, Plan)
+
+1. Use the Platform spec prompt for governance.
+2. Use the Plan phase prompt for design.md + tasks.md.
+3. Use CLI to track progress.
+
+### Developer (Deliver)
+
+1. Read delta specs and tasks.md.
+2. Use CLI to claim tasks and implement.
+3. Team Lead verifies with evidence.
 
 ## Best Practices
 

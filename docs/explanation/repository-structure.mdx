@@ -1,0 +1,67 @@
+---
+title: Repository Structure
+slug: /structure
+description: Two repos, two MCP server types, and zero overhead services.
+---
+
+import { SectionHeader, RepoCard, CalloutBox } from '@site/src/components/tom';
+import styles from '@site/src/components/tom/tom.module.css';
+
+<SectionHeader
+  num="03"
+  title="Repository Structure"
+  desc="Two repos. One for content (specs, agents, templates, policies). One for system code. Two MCP server types. Zero overhead services."
+/>
+
+<div className={`${styles.reposGrid} fi`}>
+
+<RepoCard
+  accent="rust"
+  icon="⬡"
+  title="Specs Repo"
+  sub="Content · editable by the whole team via PR"
+  tree={<>
+    <div><span style={{color:'var(--tom-teal)'}}>openclaw-specs/</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>constitution/</span> <span style={{opacity:.75,fontStyle:'italic'}}>policies, NFRs</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>agents/</span> <span style={{opacity:.75,fontStyle:'italic'}}>4 Markdown agents</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>workflows/</span> <span style={{opacity:.75,fontStyle:'italic'}}>quick, standard, full</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>templates/</span> <span style={{opacity:.75,fontStyle:'italic'}}>embedded exit gates</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>components/</span> <span style={{opacity:.75,fontStyle:'italic'}}>specs + ADRs</span></div>
+    <div>└── <span style={{color:'var(--tom-teal)'}}>graph/index.yaml</span> <span style={{opacity:.75,fontStyle:'italic'}}>traceability graph</span></div>
+  </>}
+/>
+
+<RepoCard
+  accent="teal"
+  icon="◈"
+  title="System Repo"
+  sub="Code · maintained by engineering"
+  tree={<>
+    <div><span style={{color:'var(--tom-teal)'}}>openclaw/</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>.claude/agents/</span> <span style={{opacity:.75,fontStyle:'italic'}}>symlinks to specs</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>agents/mario_hugo/</span></div>
+    <div>│   └── <span style={{color:'var(--tom-teal)'}}>docs/specs/</span> <span style={{opacity:.75,fontStyle:'italic'}}>impl + verify</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>internal/risk/</span> <span style={{opacity:.75,fontStyle:'italic'}}>Guaripolo</span></div>
+    <div>└── <span style={{color:'var(--tom-teal)'}}>config/</span> <span style={{opacity:.75,fontStyle:'italic'}}>all overrides</span></div>
+  </>}
+/>
+
+<RepoCard
+  accent="navy"
+  icon="⬟"
+  title="MCP Servers"
+  sub="2 types · no router · no extra services"
+  tree={<>
+    <div><span style={{color:'var(--tom-teal)'}}>platform-intelligence/</span></div>
+    <div>├── <span style={{color:'var(--tom-teal)'}}>platform-mcp/</span> <span style={{opacity:.75,fontStyle:'italic'}}>1 instance, 4 tools only</span></div>
+    <div>│   └── context · template · agent · workflow</div>
+    <div>└── <span style={{color:'var(--tom-teal)'}}>component-mcp/</span> <span style={{opacity:.75,fontStyle:'italic'}}>N instances</span></div>
+    <div>    <span style={{opacity:.75,fontStyle:'italic'}}>same image, different config per component</span></div>
+  </>}
+/>
+
+</div>
+
+<CalloutBox type="amber" label="Boundary rule">
+  Specs repo is governed knowledge. System repo is implementation. Keep the boundary strict so changes are auditable and ownership is explicit.
+</CalloutBox>

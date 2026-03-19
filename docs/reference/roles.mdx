@@ -1,0 +1,64 @@
+---
+title: Roles & Responsibilities
+slug: /roles
+description: Every role has a clear repo, clear ownership, and clear accountability.
+---
+
+import { SectionHeader, RolesTable, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="07"
+  title="Roles & Responsibilities"
+  desc="No overlap. No ambiguity about who decides what."
+/>
+
+<RolesTable
+  rows={[
+    {
+      role: 'Product Manager',
+      repo: 'Platform Repo',
+      owns: 'Initiative definition, business goals, UX intent',
+      accountable: 'Initiative (Epic) and success criteria',
+    },
+    {
+      role: 'Platform Architect',
+      repo: 'Specs Repo',
+      owns: 'constitution/, templates/, workflows/, graph/index.yaml served by Platform MCP',
+      accountable: 'What the system must do across components; approval of Architect output',
+    },
+    {
+      role: 'Domain Owner',
+      repo: 'Specs + System Repo',
+      owns: 'components/{name}/specs/ invariants, contracts, patterns, ADRs served by Component MCP',
+      accountable: 'Domain correctness for all specs touching their component; approval of Developer output',
+    },
+    {
+      role: 'Integration Owner',
+      repo: 'Specs Repo',
+      owns: 'Contract definitions returned by get_contracts() in component MCPs',
+      accountable: 'Approval of contract changes and breaking-change safety',
+    },
+    {
+      role: 'Component Team',
+      repo: 'System Repo',
+      owns: 'Implementation specs (docs/specs/), code, tests, local ADRs',
+      accountable: 'How the system works locally (Developer + Verifier execution)',
+    },
+    {
+      role: 'ADR Owner',
+      repo: 'Platform or Component',
+      owns: 'Technical decisions in local or global scope',
+      accountable: 'Resolving ambiguity before implementation proceeds',
+    },
+    {
+      role: 'AI Agents',
+      repo: 'analyst · architect · developer · verifier',
+      owns: 'Discovery, specification, implementation, and verification as Markdown agents',
+      accountable: 'MCP calls, exit-gate self-checks, and traceable outputs per risk level',
+    },
+  ]}
+/>
+
+<CalloutBox type="amber" label="Responsibility boundary">
+  Final authority follows artifact ownership: the role that owns the repository artifact owns the decision.
+</CalloutBox>

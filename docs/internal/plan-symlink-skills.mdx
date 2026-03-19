@@ -1,0 +1,119 @@
+---
+title: Symlink-Based Skills Installation Plan
+slug: /internal/plan-symlink-skills
+sidebar_label: Plan - Symlink Skills
+description: Implementation plan to replace file-copy skills installation with canonical directory plus symlinks.
+---
+
+import { CalloutBox } from '@site/src/components/tom';
+
+<CalloutBox type="amber" label="Internal">
+  Architecture specs, design documents, and plans for contributors.
+</CalloutBox>
+
+**Goal:** Replace file-copy skills installation with a canonical `.agentic/skills/` directory + symlinks to each agent's skill directory.
+
+**Architecture:** All skill files (packs and generated tool skills) are written once to `.agentic/skills/`. Agent tool directories (`.claude/skills/`, `.cursor/skills/`, etc.) contain only symlinks pointing back into `.agentic/skills/`. Migration from the old copy-based model happens automatically during `skills ensure`.
+
+**Tech Stack:** Go, `os.Symlink`, `os.Lstat`, `filepath.Rel`
+
+---
+
+### Task 1: Add `CanonicalSkillDir` constant and symlink helper
+
+**Files:**
+- Modify: `internal/skills/packs.go` (add constant)
+- Create: `internal/skills/symlink.go` (symlink helper functions)
+- Create: `internal/skills/symlink_test.go`
+
+Implements `EnsureSymlink(src, dst)` which ensures dst is a symlink pointing to src. If dst is a regular file (legacy copy), it is removed and replaced. If dst is a symlink with the wrong target, it is re-created. Creates parent directories for dst as needed.
+
+Tests cover: creating new symlinks, replacing existing files, idempotent behavior, and fixing wrong targets.
+
+---
+
+### Task 2: Refactor `Installer.Install` to write canonical + symlink
+
+**Files:**
+- Modify: `internal/skills/installer.go` (rewrite `Install` method)
+- Modify: `internal/skills/installer_test.go` (update assertions)
+
+Adds `CanonicalDir` field to `Installer`, `NewInstallerWithCanonicalDir(dir)` constructor. Rewrites `Install()` to:
+1. Write canonical file to `inst.CanonicalDir/<pack-relative-path>`
+2. Create symlink from tool dir to canonical file via `EnsureSymlink`
+
+Updates `IsInstalled()` to check for symlink OR real file (backwards compat during migration).
+
+---
+
+### Task 3: Refactor `GenerateToolSkills` to write canonical + symlink
+
+**Files:**
+- Modify: `internal/skills/generator.go`
+
+Updates `GenerateToolSkills` to render templates into `.agentic/skills/<name>.md` (canonical) and create symlinks from `<tool-skill-dir>/<name>.md` to canonical via `EnsureSymlink`.
+
+---
+
+### Task 4: Update `IsInstalled` to follow symlinks and check canonical
+
+**Files:**
+- Modify: `internal/skills/installer.go`
+- Modify: `internal/skills/installer_test.go`
+
+Confirms `os.Stat` already follows symlinks, so existing `IsInstalled` works with symlinked packs.
+
+---
+
+### Task 5: Update drift detection for canonical files
+
+**Files:**
+- Modify: `internal/skills/drift.go`
+
+Adds content-based drift check to `IsInstalled` comparing canonical file content against embedded content.
+
+---
+
+### Task 6: Update `Ensure` to use the new canonical-based installer
+
+**Files:**
+- Modify: `internal/skills/ensure.go`
+
+Minimal changes needed since `Ensure` already calls `NewInstaller()` which now defaults to `CanonicalSkillDir`.
+
+---
+
+### Task 7: Update existing tests to assert symlinks
+
+**Files:**
+- Modify: `internal/skills/ensure_test.go`
+- Modify: `internal/skills/installer_test.go`
+
+Adds `os.Lstat` assertions to verify skill files are symlinks, not regular files.
+
+---
+
+### Task 8: Run full project test suite
+
+Run `go test ./...` and fix any failures.
+
+---
+
+### Task 9: Update `.gitignore` for agent tool skill dirs (symlinks)
+
+**Files:**
+- Modify: `.gitignore` (if needed)
+
+Agent tool skill directories should be gitignored since they contain symlinks (generated artifacts). The canonical `.agentic/skills/` is committed.
+
+```gitignore
+# Agent tool skill directories (symlinks to .agentic/skills/)
+.claude/skills/
+.cursor/skills/
+.gemini/skills/
+.windsurf/skills/
+.codex/skills/
+.github/skills/
+.opencode/skills/
+.agent/skills/
+```

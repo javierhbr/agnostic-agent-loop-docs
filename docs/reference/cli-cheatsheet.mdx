@@ -1,5 +1,4 @@
 ---
-id: cli-cheatsheet
 title: CLI Cheat Sheet
 slug: /cli-cheatsheet
 description: One-page reference for tasks, OpenSpec, monorepo setup, and completion flow.
@@ -20,17 +19,38 @@ import { SectionHeader, CalloutBox } from '@site/src/components/tom';
 ## Choose Your Workflow
 
 ```text
-Bug fix / small refactor (< 1 day)?
-  Use: agentic-agent task
+START HERE: What are you building?
 
-Single feature (1-2 weeks, 1 package)?
-  Use: agentic-agent openspec init + tasks
+┌────────────────────────────────────────────────────────┐
+│  Bug fix or small refactor? (< 1 day)                  │
+│  -> Use: agentic-agent task only                       │
+│  Time: 5 minutes setup                                 │
+└────────────────────────────────────────────────────────┘
 
-Monorepo (multiple packages / parallel teams)?
-  Use: OpenSpec + multi-path specDirs
+┌────────────────────────────────────────────────────────┐
+│  Single feature (1-2 weeks)?                           │
+│  -> Use: agentic-agent openspec init                   │
+│  Time: 10 minutes setup                                │
+└────────────────────────────────────────────────────────┘
 
-High-risk (payments/auth/PII/regulatory)?
-  Use: SDD + gates (risk-proportional)
+┌────────────────────────────────────────────────────────┐
+│  Monorepo (multi-package)?                             │
+│  -> Use: OpenSpec + multi-path config                  │
+│  Time: 20 minutes setup                                │
+└────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│  Critical / high-risk (payments, auth)?                │
+│  -> Use: Full SDD with gates                           │
+│  Time: 1 hour planning + gates                         │
+└────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│  Full SDD (platform + multi-team)?                     │
+│  -> Use: 5-Phase: Platform > Assess > Specify >        │
+│          Plan > Deliver                                │
+│  Time: Multi-sprint lifecycle                          │
+└────────────────────────────────────────────────────────┘
 ```
 
 ## Quick Commands
@@ -66,13 +86,44 @@ agentic-agent sdd adr create --title "Decision"
 agentic-agent sdd adr resolve <adr-id>
 ```
 
+### Full SDD 5-Phase (Platform + Multi-Team)
+
+```bash
+# Assess
+agentic-agent task list
+
+# Specify
+agentic-agent openspec init "Feature" --from requirements.md
+
+# Plan + Deliver
+agentic-agent task claim <id>
+agentic-agent validate
+agentic-agent task complete <id>
+```
+
+**Core Boundary Rule:** Platform-side uses BMAD + OpenSpec + Speckit; component repos use OpenSpec ONLY.
+
 ## Workflow Comparison (Fast)
 
-| Workflow | Use for | Typical timeline | Gates |
-|---|---|---:|---|
-| `task` | Bugs, hotfixes, tiny refactors | hours to 1 day | none |
-| `openspec` | Features with acceptance criteria | 1-2 weeks | optional / lightweight |
-| `sdd` | High/critical risk changes | 3+ weeks | mandatory |
+| Workflow | Use for | Typical timeline | Gates | Setup |
+|---|---|---:|---|---:|
+| `task` | Bugs, hotfixes, tiny refactors | hours to 1 day | none | 5 min |
+| `openspec` | Features with acceptance criteria | 1-2 weeks | optional / lightweight | 10 min |
+| `sdd` | High/critical risk changes | 3+ weeks | mandatory | 1 hour |
+
+## CLI Command Map
+
+| What | Command |
+|------|---------|
+| **Create** | `agentic-agent task create "name"` |
+| **List** | `agentic-agent task list` |
+| **Claim** | `agentic-agent task claim <id>` |
+| **Complete** | `agentic-agent task complete <id>` |
+| **New Spec** | `agentic-agent openspec init "name" --from file.md` |
+| **List Specs** | `agentic-agent openspec list` |
+| **Show Spec** | `agentic-agent openspec show <id>` |
+| **Mark Done** | `agentic-agent openspec complete <id>` |
+| **Archive** | `agentic-agent openspec archive <id>` |
 
 ## Project Structure
 
@@ -282,6 +333,52 @@ agentic-agent openspec init "OAuth Provider" --from packages/auth-service/specs/
 [Anything else the team should know]
 ```
 
+## Decision Trees
+
+### Should I use OpenSpec?
+
+```text
+Is this a bug fix?
+├─ YES → Just use: agentic-agent task create
+└─ NO → Continue...
+
+Will it take > 1 week?
+├─ NO → Use: agentic-agent task create
+└─ YES → Continue...
+
+Do you have clear acceptance criteria?
+├─ NO → Write spec first, then: agentic-agent openspec init
+└─ YES → agentic-agent openspec init --from requirements.md
+```
+
+### Single Package or Monorepo?
+
+```text
+Single package
+├─ Use: /small-projects workflow
+└─ Config: minimal agnostic-agent.yaml
+
+Monorepo (multiple packages)
+├─ Use: /monorepo-openspec workflow
+└─ Config: multi-path specDirs
+```
+
+### When to Upgrade Workflows
+
+```text
+Current: Using tasks only
+├─ Scale up if: > 2 week feature
+└─ Next: agentic-agent openspec
+
+Current: Using OpenSpec
+├─ Scale up if: High risk (payment/auth/PII)
+└─ Next: 5-Phase SDD (Platform > Assess > Specify > Plan > Deliver)
+
+Current: Using 5-Phase SDD
+├─ Add gates if: Regulatory/critical
+└─ Command: agentic-agent validate
+```
+
 ## Common Gotchas
 
 | Problem | Fix |
@@ -289,7 +386,21 @@ agentic-agent openspec init "OAuth Provider" --from packages/auth-service/specs/
 | "Where do specs go?" | Single package: next to `requirements.md`; monorepo: `packages/*/specs/` |
 | "Can I use specs and tasks?" | Yes: specs for planning, tasks for tracking |
 | "What if the spec changes?" | Update the file and regenerate tasks as needed |
+| "How do I integrate specs?" | Use `--from` flag: `openspec init --from other-spec.md` |
+| "Can teams work in parallel?" | Yes, use monorepo workflow + multi-path config |
 | "Do I need gates?" | Use gates for high-risk only; keep low-risk work fast |
+| "Can I skip OpenSpec?" | Yes, use `task` commands directly |
+
+## TL;DR Matrix
+
+| Scenario | Use | Command |
+|----------|-----|---------|
+| Bug fix | Task | `task create "fix: X"` |
+| Small feature | OpenSpec | `openspec init --from spec.md` |
+| Monorepo | Multi-path + OpenSpec | See [/monorepo-openspec](/monorepo-openspec) |
+| Critical feature | 5-Phase SDD | `openspec init + task claim` |
+| Parallel teams | Monorepo + worktrees | `agentic-agent task claim` per team |
+| Final verification | Hard gate | `openspec complete` (after tests pass) |
 
 ## Help
 

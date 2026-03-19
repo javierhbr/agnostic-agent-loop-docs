@@ -1,0 +1,247 @@
+---
+title: Development Lifecycle
+slug: /lifecycle
+description: Every initiative follows one governed flow, selected by risk level.
+---
+
+import { SectionHeader, FlowStep, CalloutBox } from '@site/src/components/tom';
+
+<SectionHeader
+  num="04"
+  title="Development Lifecycle"
+  desc="Agent sequence depends on risk level: quick for low/bug_fix, standard for medium, full for high/critical."
+/>
+
+## Workflow Selection
+
+| Workflow | Risk | Agent sequence | Summary |
+|---|---|---|---|
+| **Quick** | low · bug_fix | Developer → Verifier | Fastest path, no high-level spec |
+| **Standard** | medium · new feature | Architect → Developer → Verifier | No dedicated Analyst |
+| **Full** | high · critical | Analyst → Architect → Developer → Verifier | Guaripolo, schema migrations, live trading |
+
+<details>
+  <summary>Diagram: OpenSpec lifecycle (plan -> build -> verify)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                    OPENSPEC LIFECYCLE                            │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│ 1. PLAN PHASE (Day 1)                                            │
+│                                                                  │
+│   Write spec file (requirements.md)                              │
+│   ↓                                                              │
+│   agentic-agent openspec init "Name" --from requirements.md      │
+│   ↓                                                              │
+│   Creates:                                                       │
+│   • .agentic/openspec/changes/<feature>/proposal.md              │
+│   • .agentic/openspec/changes/<feature>/tasks.md                 │
+└──────────────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────────────┐
+│ 2. BUILD PHASE (Days 2-N)                                        │
+│                                                                  │
+│   ┌────────────────────────────────────────────────────────┐     │
+│   │ For each task:                                         │     │
+│   │                                                        │     │
+│   │   agentic-agent task claim <task-id>                   │     │
+│   │   ↓                                                    │     │
+│   │   [Implement in your package]                          │     │
+│   │   ├─ Edit code files                                   │     │
+│   │   ├─ Add tests                                         │     │
+│   │   └─ Commit changes                                    │     │
+│   │   ↓                                                    │     │
+│   │   agentic-agent task complete <task-id>                │     │
+│   │   ↓                                                    │     │
+│   │   Task marked done, move to next                       │     │
+│   └────────────────────────────────────────────────────────┘     │
+│   ↓                                                              │
+│   Repeat until all tasks completed                               │
+└──────────────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────────────┐
+│ 3. VERIFY PHASE (Final Day)                                      │
+│                                                                  │
+│   agentic-agent openspec status <feature-id>                     │
+│   ↓                                                              │
+│   Check all acceptance criteria ✓                                │
+│   Run tests one final time ✓                                     │
+│   Code review complete ✓                                         │
+│   ↓                                                              │
+│   agentic-agent openspec complete <feature-id>                   │
+│   ↓                                                              │
+│   agentic-agent openspec archive <feature-id>                    │
+└──────────────────────────────────────────────────────────────────┘
+                            ↓
+                    ✅ FEATURE DONE
+```
+
+</details>
+
+<div className="fi">
+
+<FlowStep
+  role="Analyst Agent"
+  roleAccent="pm"
+  roleRepo="Loads analyst.md · full workflow only"
+  title="Discovery"
+  desc="Defines problem, evidence, affected components, and success metrics. Produces discovery.md."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Platform MCP `get_context_pack(intent)` and `get_template("discovery")`.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    Problem metric, real evidence, user stories, out-of-scope list, affected components, and success metrics must be complete before handoff.
+  </CalloutBox>
+</FlowStep>
+
+<FlowStep
+  role="Architect Agent"
+  roleAccent="arch"
+  roleRepo="Loads architect.md · standard + full"
+  title="Feature Spec + Component Specs"
+  desc="Defines UX flow, domain responsibilities, NFRs, contract changes, and risk flags. Produces one feature-spec plus one component spec per affected component."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Platform MCP `get_context_pack(intent)` and Component MCP `get_contracts()`, `get_invariants()`, `get_decisions()` for each affected component.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    ACs in Given/When/Then, concrete NFRs, contract changes declared (or explicit none), rollback strategy, and critical flag when required.
+  </CalloutBox>
+</FlowStep>
+
+<FlowStep
+  role="Developer Agent"
+  roleAccent="comp"
+  roleRepo="Loads developer.md · all workflows · parallel per component"
+  title="Impl Spec + Tasks"
+  desc="Defines exact data model, code changes, edge cases, and observability. Produces impl-spec.md and tasks.yaml in component docs/specs/."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Component MCP `get_patterns()` and `get_decisions()` before implementation.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    Complete data model, endpoints/functions with errors, edge-case coverage, observability, rollout plan, and dependency-aware tasks.
+  </CalloutBox>
+</FlowStep>
+
+<FlowStep
+  role="Verifier Agent"
+  roleAccent="gate"
+  roleRepo="Loads verifier.md · hard stop"
+  title="Verification + Sign-offs"
+  desc="Verifies every acceptance criterion with evidence. Produces verify.md. Merge is blocked until all checks pass."
+>
+  <CalloutBox type="blue" label="MCP interactions">
+    Platform MCP `get_context_pack(intent)` to load definition-of-done by risk level.
+  </CalloutBox>
+  <CalloutBox type="red" label="Exit gate">
+    AC evidence, tests attached, observability confirmed, rollback tested, and required sign-offs. Critical changes require explicit HUMAN APPROVED entry.
+  </CalloutBox>
+</FlowStep>
+
+<FlowStep
+  role="Team / Domain Owner"
+  roleAccent="plat"
+  roleRepo="Owns post-merge knowledge updates"
+  title="Release + Knowledge Update"
+  desc="After merge, update graph/index.yaml and refresh component/platform knowledge so the next initiative starts from better context."
+  isLast={true}
+>
+  <CalloutBox type="green" label="Post-release updates">
+    Update patterns, runbooks, constraints, constitution rules, contract versions, and graph links through PRs.
+  </CalloutBox>
+</FlowStep>
+
+</div>
+
+## Architect Fan-out Rule
+
+After `feature-spec.md` is approved, run one Developer agent per affected component in parallel. Verifier waits until all component tracks finish.
+
+<details>
+  <summary>Diagram: Time estimates by workflow (rule of thumb)</summary>
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│           REALISTIC TIME BREAKDOWN                           │
+└──────────────────────────────────────────────────────────────┘
+
+SINGLE PACKAGE (OPENSPEC):
+
+Feature: "Product Search" (1-2 week feature)
+
+  ├─ Setup & Spec             1 hour
+  │  └─ Write requirements.md + openspec init
+  │
+  ├─ Implementation            4-5 days
+  │  ├─ Task 1 (Backend API)       1 day
+  │  ├─ Task 2 (Frontend UI)       1 day
+  │  ├─ Task 3 (Filters)           1 day
+  │  └─ Task 4 (Tests + Polish)    1-2 days
+  │
+  └─ Verification + Release    1 day
+     └─ Final tests + code review + archive
+
+  TOTAL: ~1.5 weeks
+
+
+MONOREPO (MULTI-PACKAGE):
+
+Feature: "OAuth Integration" (2-3 week feature, 3 teams)
+
+  ├─ Planning                  2 hours
+  │  ├─ Spec for Auth Svc         30 min
+  │  ├─ Spec for API Svc          30 min
+  │  └─ Spec for Web UI           30 min
+  │
+  ├─ Implementation            6-8 days (PARALLEL)
+  │  ├─ Team A (Auth Svc)          2-3 days
+  │  ├─ Team B (API Svc)           2-3 days  PARALLEL
+  │  └─ Team C (Web UI)            2-3 days
+  │
+  ├─ Integration & Testing    2-3 days
+  │  └─ Cross-service tests + deployment
+  │
+  └─ Verification + Release    1 day
+
+  TOTAL: ~2-3 weeks (would be 4-5 weeks if sequential)
+
+
+SDD (CRITICAL FEATURE):
+
+Feature: "Payment Processing" (high-risk, large team)
+
+  ├─ Planning & Specification  5-7 days
+  │  ├─ Analyst phase             2 days
+  │  ├─ Architect phase           2 days
+  │  └─ Gate checks               1-2 days
+  │
+  ├─ Implementation            8-10 days
+  │  ├─ Core payment logic         3-4 days
+  │  ├─ Error handling + edge cases 2-3 days
+  │  ├─ Tests                      2-3 days
+  │  └─ Security audit            1-2 days
+  │
+  ├─ Verification             3-5 days
+  │  ├─ Verifier phase            2-3 days
+  │  └─ Final gate checks          1-2 days
+  │
+  └─ Release                   1 day
+
+  TOTAL: ~3-4 weeks
+
+
+GUIDELINE:
+┌──────────────────────────────────────────────────────────────┐
+│ • Add 20-30% buffer for unknowns                            │
+│ • Parallel work reduces total time (monorepo advantage)      │
+│ • High-risk features need more planning time upfront        │
+│ • Each gate check adds 1-2 days                             │
+│ • Testing often takes 30-40% of implementation time         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+</details>

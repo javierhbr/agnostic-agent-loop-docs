@@ -1,0 +1,112 @@
+---
+title: Scaling Guide
+slug: /scaling
+description: Start with one repo and add structure only when the team needs it.
+---
+
+import { SectionHeader, ScaleCard, D1Phase, CalloutBox } from '@site/src/components/tom';
+import styles from '@site/src/components/tom/tom.module.css';
+
+<SectionHeader
+  num="08"
+  title="Scaling Guide"
+  desc="The two-MCP model and four agents stay constant. Only physical organization and governance strictness evolve."
+/>
+
+<div className={`${styles.scaleGrid} fi`}>
+
+<ScaleCard
+  stage="early"
+  title="Early Stage"
+  teams="1–2 people"
+  desc="One repo. Platform MCP reads a single openclaw-specs/ directory. Component MCP reads one monorepo component. Quick workflow only."
+  items={[
+    'Single repo with specs and code together',
+    'Platform MCP reads local specs directory',
+    'One component MCP instance for the whole system',
+    'Quick workflow only (developer → verifier)',
+  ]}
+/>
+
+<ScaleCard
+  stage="growing"
+  title="Growing Team"
+  teams="3–6 people"
+  desc="Split repos so product and engineering can PR independently. Add component MCP instances per bounded context."
+  items={[
+    'openclaw-specs/ split from system repo',
+    'Component MCP per major component',
+    'Standard workflow for medium/new features',
+    'agents/ symlinked into .claude/ from specs repo',
+  ]}
+/>
+
+<ScaleCard
+  stage="full"
+  title="Full Model"
+  teams="6+ people"
+  desc="Full two-repo model. Full workflow for high/critical. Human approval enforced at verification. Spec graph fully linked."
+  items={[
+    'Full workflow for high/critical risk',
+    'Analyst agent activated for major initiatives',
+    'Human approval gates enforced in verifier.md',
+    'graph/index.yaml fully linked for audit trail',
+  ]}
+/>
+
+</div>
+
+## Ready to start on Day 1?
+
+Four phases: foundation, first initiative, standard flow, harden.
+
+<div className={styles.d1Grid}>
+
+<D1Phase
+  label="Phase 1 · Foundation"
+  items={[
+    'Create openclaw-specs/ repo',
+    'Write constitution/policies.md',
+    'Deploy Platform MCP (reads specs/)',
+    'Deploy Component MCP per component',
+    'Symlink .claude/agents/ to specs/agents/',
+  ]}
+/>
+
+<D1Phase
+  label="Phase 2 · First Initiative"
+  items={[
+    'Select one low-risk pilot feature',
+    'Run quick workflow (developer.md only)',
+    'Developer calls Component MCP',
+    'Verifier produces verify.md',
+    'Validate gate checklist end to end',
+  ]}
+/>
+
+<D1Phase
+  label="Phase 3 · Standard Flow"
+  items={[
+    'Run standard workflow for medium feature',
+    'Architect produces feature-spec.md',
+    'Fan out developer agents per component in parallel',
+    'Verifier waits for all component tracks',
+    'Update graph/index.yaml post-merge',
+  ]}
+/>
+
+<D1Phase
+  label="Phase 4 · Harden"
+  items={[
+    'Enable full workflow for critical changes',
+    'Activate Analyst for Guaripolo/live flag cases',
+    'Require human approval in verifier.md',
+    'Enforce verify.md sign-off in CI before merge',
+  ]}
+/>
+
+</div>
+
+<CalloutBox type="amber">
+  The model scales by adding governance discipline, not by adding process services.
+</CalloutBox>
